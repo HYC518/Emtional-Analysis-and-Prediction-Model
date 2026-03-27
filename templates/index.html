@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --cream:   #FAF7F2;
+    --warm:    #F5EFE6;
+    --sand:    #E8DDD0;
+    --brown:   #8B6F5E;
+    --dark:    #2C2016;
+    --green:   #4A7C59;
+    --green-l: #EAF2EC;
+    --orange:  #D4724A;
+    --orange-l:#FDF0EB;
+    --red-l:   #FDECEA;
+    --muted:   #9B8878;
+    --radius:  16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* ── header ── */
+  header {
+    background: var(--warm);
+    border-bottom: 1px solid var(--sand);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  header .logo { font-size: 28px; }
+
+  header h1 {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── layout ── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* ── tabs ── */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    background: var(--warm);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--sand);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .tab.active {
+    background: white;
+    color: var(--dark);
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── cards ── */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--sand);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card h2 {
+    font-family: 'Lora', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--dark);
+  }
+
+  /* ── form ── */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--brown);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--sand);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--dark);
+    background: var(--cream);
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--brown);
+    background: white;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+  }
+
+  /* ── mood slider ── */
+  .mood-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .mood-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border: 2px solid var(--sand);
+    border-radius: 12px;
+    background: var(--cream);
+    cursor: pointer;
+    font-size: 22px;
+    transition: all .2s;
+    text-align: center;
+  }
+
+  .mood-btn:hover { border-color: var(--brown); background: var(--warm); }
+  .mood-btn.selected { border-color: var(--orange); background: var(--orange-l); }
+
+  .mood-btn span {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ── button ── */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .btn-primary {
+    background: var(--orange);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #c0623a; transform: translateY(-1px); }
+  .btn-primary:disabled { background: var(--sand); color: var(--muted); transform: none; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: var(--green-l);
+    color: var(--green);
+    border: 1px solid #c5ddc8;
+  }
+
+  .btn-secondary:hover { background: #d5e8d8; }
+
+  /* ── result boxes ── */
+  .result-box {
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    animation: fadeIn .4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-box.green  { background: var(--green-l); border: 1px solid #c5ddc8; }
+  .result-box.orange { background: var(--orange-l); border: 1px solid #f5c4b0; }
+  .result-box.red    { background: var(--red-l); border: 1px solid #f5c1c1; }
+  .result-box.sand   { background: var(--warm); border: 1px solid var(--sand); }
+
+  .result-box .label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .result-box .value {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    color: var(--dark);
+    line-height: 1.5;
+  }
+
+  .result-box .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .badge.positive { background: var(--green-l); color: var(--green); }
+  .badge.negative { background: var(--red-l); color: #a32d2d; }
+  .badge.neutral  { background: var(--warm); color: var(--muted); }
+
+  /* ── entries list ── */
+  .entry-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--warm);
+  }
+
+  .entry-item:last-child { border-bottom: none; }
+
+  .entry-score {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: var(--warm);
+  }
+
+  .entry-meta { flex: 1; }
+
+  .entry-date {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .entry-text {
+    font-size: 14px;
+    color: var(--dark);
+    line-height: 1.5;
+  }
+
+  .entry-sentiment {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── flag alert ── */
+  .flag-alert {
+    background: var(--red-l);
+    border: 1px solid #f5c1c1;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #a32d2d;
+    margin-top: 12px;
+  }
+
+  /* ── chart ── */
+  .chart-wrap {
+    position: relative;
+    height: 280px;
+    margin-top: 16px;
+  }
+
+  /* ── pattern cards ── */
+  .pattern-tag {
+    display: inline-block;
+    background: var(--warm);
+    border: 1px solid var(--sand);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--dark);
+    margin: 4px 4px 4px 0;
+  }
+
+  .suggestion-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--warm);
+    font-size: 14px;
+    color: var(--dark);
+  }
+
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item::before { content: '🌱'; flex-shrink: 0; }
+
+  /* ── empty state ── */
+  .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+
+  .empty .emoji { font-size: 40px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; line-height: 1.6; }
+
+  /* ── loading ── */
+  .loading {
+    text-align: center;
+    padding: 24px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--sand);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── two col grid ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── counter badge ── */
+  .counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--orange-l);
+    border: 1px solid #f5c4b0;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--orange);
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌿</div>
+  <div>
+    <h1>Mood Journal</h1>
+    <p>A gentle space to check in with yourself</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- entry counter -->
+  <div id="counter" class="counter" style="display:none">
+    📖 <span id="counter-num">0</span> entries logged
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('journal')">📝 Journal</button>
+    <button class="tab" onclick="switchTab('entries')">📅 Entries</button>
+    <button class="tab" onclick="switchTab('patterns')">🔍 Patterns</button>
+    <button class="tab" onclick="switchTab('predict')">📈 Predict</button>
+  </div>
+
+  <!-- ══ TAB 1: JOURNAL ══ -->
+  <div id="tab-journal" class="tab-content active">
+
+    <div class="card">
+      <h2>How are you today?</h2>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="date" />
+      </div>
+
+      <div class="form-group">
+        <label>Time of day</label>
+        <select id="time-of-day">
+          <option value="morning">☀️ Morning</option>
+          <option value="afternoon">🌤 Afternoon</option>
+          <option value="evening" selected>🌙 Evening</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Mood score</label>
+        <div class="mood-row">
+          <button class="mood-btn" onclick="selectMood(1)">😞<span>1</span></button>
+          <button class="mood-btn" onclick="selectMood(2)">😔<span>2</span></button>
+          <button class="mood-btn" onclick="selectMood(3)">😐<span>3</span></button>
+          <button class="mood-btn" onclick="selectMood(4)">🙂<span>4</span></button>
+          <button class="mood-btn" onclick="selectMood(5)">😊<span>5</span></button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Journal entry</label>
+        <textarea id="journal" placeholder="Write whatever is on your mind..."></textarea>
+      </div>
+
+      <button class="btn btn-primary" id="submit-btn" onclick="submitEntry()" disabled>
+        Save entry
+      </button>
+    </div>
+
+    <!-- results appear here -->
+    <div id="results" style="display:none">
+
+      <div class="card">
+        <h2>Here's what I noticed 💬</h2>
+
+        <div id="reflection-box" class="result-box orange">
+          <div class="label">Reflection prompt</div>
+          <div class="value" id="reflection-text"></div>
+        </div>
+
+        <div class="grid-2">
+          <div id="sentiment-box" class="result-box green">
+            <div class="label">Sentiment</div>
+            <div id="sentiment-badge"></div>
+            <div class="value" id="sentiment-note"></div>
+          </div>
+          <div id="score-box" class="result-box sand">
+            <div class="label">Mood score</div>
+            <div class="value" id="score-display" style="font-size:36px;text-align:center;padding:8px 0"></div>
+          </div>
+        </div>
+
+        <div id="flag-box" style="display:none" class="flag-alert">
+          ⚠️ Some concerning phrases were noticed. Please reach out to someone you trust or use the resources below.
+        </div>
+
+        <div id="escalation-box" style="display:none" class="result-box red">
+          <div class="label">Wellness check</div>
+          <div class="value" id="escalation-text"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══ TAB 2: ENTRIES ══ -->
+  <div id="tab-entries" class="tab-content">
+    <div class="card">
+      <h2>Your entries</h2>
+      <div id="entries-list">
+        <div class="empty">
+          <div class="emoji">📖</div>
+          <p>No entries yet.<br>Start by writing your first journal entry!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 3: PATTERNS ══ -->
+  <div id="tab-patterns" class="tab-content">
+    <div class="card">
+      <h2>Mood patterns</h2>
+      <div id="patterns-content">
+        <div class="empty">
+          <div class="emoji">🔍</div>
+          <p>Write at least 7 entries to see your mood patterns.</p>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="loadPatterns()" style="margin-top:20px">
+        Analyse my patterns
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ TAB 4: PREDICT ══ -->
+  <div id="tab-predict" class="tab-content">
+    <div class="card">
+      <h2>7-day mood forecast</h2>
+      <div id="predict-content">
+        <div class="empty">
+          <div class="emoji">📈</div>
+          <p>Write at least 7 entries to generate a mood forecast.</p>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="loadPrediction()" style="margin-top:20px">
+        Generate forecast
+      </button>
+      <div class="chart-wrap" style="display:none" id="chart-wrap">
+        <canvas id="mood-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── state ──────────────────────────────────────────────────────
+  let selectedMood = null;
+  let moodChart    = null;
+
+  // ── set today's date ───────────────────────────────────────────
+  document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+  // ── tab switching ──────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelector(`#tab-${name}`).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'entries') renderEntries();
+  }
+
+  // ── mood selection ─────────────────────────────────────────────
+  function selectMood(score) {
+    selectedMood = score;
+    document.querySelectorAll('.mood-btn').forEach((btn, i) => {
+      btn.classList.toggle('selected', i + 1 === score);
+    });
+    checkReady();
+  }
+
+  function checkReady() {
+    const journal = document.getElementById('journal').value.trim();
+    document.getElementById('submit-btn').disabled = !(selectedMood && journal.length > 0);
+  }
+
+  document.getElementById('journal').addEventListener('input', checkReady);
+
+  // ── submit entry ───────────────────────────────────────────────
+  async function submitEntry() {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const body = {
+      date:         document.getElementById('date').value,
+      mood_score:   selectedMood,
+      journal_text: document.getElementById('journal').value.trim(),
+      time_of_day:  document.getElementById('time-of-day').value,
+    };
+
+    try {
+      const res  = await fetch('/api/submit', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+      const data = await res.json();
+      showResults(data, body);
+
+      // update counter
+      const counter = document.getElementById('counter');
+      counter.style.display = 'inline-flex';
+      document.getElementById('counter-num').textContent = data.total_entries;
+
+      // reset form
+      document.getElementById('journal').value = '';
+      selectedMood = null;
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+    } catch (e) {
+      alert('Something went wrong. Is the server running?');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Save entry';
+  }
+
+  // ── show results ───────────────────────────────────────────────
+  function showResults(data, body) {
+    document.getElementById('results').style.display = 'block';
+
+    // reflection
+    document.getElementById('reflection-text').textContent = data.reflection;
+
+    // sentiment
+    const s = data.sentiment;
+    const badge = document.getElementById('sentiment-badge');
+    badge.innerHTML = `<span class="badge ${s.label}">${s.label}</span>`;
+    document.getElementById('sentiment-note').textContent =
+      s.brief_note !== 'neutral' ? `Keywords: ${s.brief_note}` : 'No strong sentiment words detected';
+
+    // score emoji
+    const emojis = { 1:'😞', 2:'😔', 3:'😐', 4:'🙂', 5:'😊' };
+    document.getElementById('score-display').textContent =
+      `${emojis[body.mood_score]} ${body.mood_score}`;
+
+    // flags
+    const flagBox = document.getElementById('flag-box');
+    flagBox.style.display = s.flags.length > 0 ? 'block' : 'none';
+
+    // escalation
+    const escBox  = document.getElementById('escalation-box');
+    const escText = document.getElementById('escalation-text');
+    if (data.escalation) {
+      const esc    = data.escalation;
+      const colors = { green: 'green', yellow: 'orange', red: 'red' };
+      escBox.className = `result-box ${colors[esc.risk_level] || 'orange'}`;
+      escText.textContent = esc.suggested_action;
+      if (esc.resource_link) {
+        escText.innerHTML += `<br><a href="${esc.resource_link}" target="_blank" style="color:var(--orange);font-size:13px;margin-top:6px;display:inline-block">Get support →</a>`;
+      }
+      escBox.style.display = 'block';
+    } else {
+      escBox.style.display = 'none';
+    }
+
+    // scroll to results
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── render entries list ────────────────────────────────────────
+  async function renderEntries() {
+    const res     = await fetch('/api/entries');
+    const entries = await res.json();
+    const list    = document.getElementById('entries-list');
+
+    if (entries.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="emoji">📖</div><p>No entries yet.<br>Start by writing your first journal entry!</p></div>`;
+      return;
+    }
+
+    const emojis = { 1:'😞', 2:'😔', 3:'😐', 4:'🙂', 5:'😊' };
+    list.innerHTML = [...entries].reverse().map(e => `
+      <div class="entry-item">
+        <div class="entry-score">${emojis[e.mood_score]}</div>
+        <div class="entry-meta">
+          <div class="entry-date">${e.date} · ${e.time_of_day}</div>
+          <div class="entry-text">${e.journal_text}</div>
+          <div class="entry-sentiment">
+            <span class="badge ${e.sentiment_label}">${e.sentiment_label}</span>
+            ${e.sentiment_note !== 'neutral' ? `· ${e.sentiment_note}` : ''}
+            ${e.sentiment_flags.length > 0 ? '⚠️' : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── load patterns ──────────────────────────────────────────────
+  async function loadPatterns() {
+    const content = document.getElementById('patterns-content');
+    content.innerHTML = `<div class="loading"><div class="spinner"></div>Analysing your patterns...</div>`;
+
+    try {
+      const res  = await fetch('/api/patterns');
+      const data = await res.json();
+
+      if (data.error) {
+        content.innerHTML = `<div class="empty"><div class="emoji">🔍</div><p>${data.error}</p></div>`;
+        return;
+      }
+
+      content.innerHTML = `
+        <div class="result-box orange" style="margin-bottom:16px">
+          <div class="label">Insight</div>
+          <div class="value">${data.insight}</div>
+        </div>
+
+        <div style="margin-bottom:20px">
+          <div class="label" style="margin-bottom:10px">Patterns noticed</div>
+          ${data.patterns.map(p => `<span class="pattern-tag">✦ ${p}</span>`).join('')}
+        </div>
+
+        <div>
+          <div class="label" style="margin-bottom:8px">Suggestions</div>
+          ${data.suggestions.map(s => `<div class="suggestion-item">${s}</div>`).join('')}
+        </div>
+
+        ${data.show_resources ? `
+        <div class="flag-alert" style="margin-top:16px">
+          💙 Your scores suggest you might benefit from some extra support.
+          <a href="https://students.wustl.edu/habif-health-and-wellness-center/" target="_blank" style="color:#a32d2d;display:block;margin-top:6px">WashU Habif Health & Wellness Center →</a>
+        </div>` : ''}
+      `;
+    } catch (e) {
+      content.innerHTML = `<div class="empty"><p>Could not load patterns. Is the server running?</p></div>`;
+    }
+  }
+
+  // ── load prediction ────────────────────────────────────────────
+  async function loadPrediction() {
+    const content  = document.getElementById('predict-content');
+    const chartWrap = document.getElementById('chart-wrap');
+    content.innerHTML = `<div class="loading"><div class="spinner"></div>Training LSTM model... this takes a moment ☕</div>`;
+    chartWrap.style.display = 'none';
+
+    try {
+      const res  = await fetch('/api/predict');
+      const data = await res.json();
+
+      if (data.error) {
+        content.innerHTML = `<div class="empty"><div class="emoji">📈</div><p>${data.error}</p></div>`;
+        return;
+      }
+
+      content.innerHTML = `
+        <p style="font-size:14px;color:var(--muted);margin-bottom:8px">
+          Based on your last ${data.historical_scores.length} entries, here's what the model predicts:
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+          ${data.predicted_scores.map((s, i) => {
+            const emojis = { 1:'😞', 2:'😔', 3:'😐', 4:'🙂', 5:'😊' };
+            const emoji  = emojis[Math.round(s)] || '😐';
+            return `<div style="text-align:center;padding:12px 16px;background:var(--orange-l);border:1px solid #f5c4b0;border-radius:12px;min-width:60px">
+              <div style="font-size:20px">${emoji}</div>
+              <div style="font-size:13px;font-weight:500;color:var(--orange);margin-top:4px">${s}</div>
+              <div style="font-size:11px;color:var(--muted)">${data.predicted_dates[i].slice(5)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      `;
+
+      // draw chart
+      chartWrap.style.display = 'block';
+      if (moodChart) moodChart.destroy();
+
+      const ctx = document.getElementById('mood-chart').getContext('2d');
+      moodChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [...data.historical_dates, ...data.predicted_dates],
+          datasets: [
+            {
+              label: 'Historical',
+              data: [...data.historical_scores, null],
+              borderColor: '#4A7C59',
+              backgroundColor: 'rgba(74,124,89,0.08)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#4A7C59',
+              tension: 0.3,
+              fill: true,
+            },
+            {
+              label: 'Predicted',
+              data: [...data.historical_scores.map(() => null), data.historical_scores[data.historical_scores.length-1], ...data.predicted_scores],
+              borderColor: '#D4724A',
+              borderDash: [6, 3],
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#D4724A',
+              pointStyle: 'rect',
+              tension: 0.3,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 0.5,
+              max: 5.5,
+              ticks: {
+                stepSize: 1,
+                callback: v => ({1:'😞',2:'😔',3:'😐',4:'🙂',5:'😊'}[v] || ''),
+              },
+              grid: { color: 'rgba(0,0,0,0.04)' }
+            },
+            x: {
+              ticks: { maxTicksLimit: 10, font: { size: 11 } },
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: ctx => `Score: ${ctx.parsed.y}`
+              }
+            }
+          }
+        }
+      });
+
+    } catch (e) {
+      content.innerHTML = `<div class="empty"><p>Could not load prediction. Is the server running?</p></div>`;
+    }
+  }
+</script>
+
+</body>
+</html>

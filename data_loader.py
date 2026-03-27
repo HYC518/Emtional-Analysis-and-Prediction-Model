@@ -11,5 +11,5 @@ class DataLoader:
     @staticmethod
     def customize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         df = df.drop_duplicates()
-        df = df.fillna(method='ffill')
+        df = df.ffill()
         return df

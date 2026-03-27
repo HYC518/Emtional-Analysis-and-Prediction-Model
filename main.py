@@ -1,4 +1,5 @@
 import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import json
 import pandas as pd
 from dotenv import load_dotenv
