@@ -47,13 +47,13 @@ class SentimentAnalyzer:
 
             if word in self.POSITIVE:
                 if negated:
-                    neg.append(word)
+                    neg.append(f"not {word}")
                 else:
                     pos.append(word)
 
             elif word in self.NEGATIVE:
                 if negated:
-                    pos.append(word)
+                    pos.append(f"not {word}")
                 else:
                     neg.append(word)
 

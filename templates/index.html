@@ -4,846 +4,758 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mood Journal</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  :root {
-    --cream:   #FAF7F2;
-    --warm:    #F5EFE6;
-    --sand:    #E8DDD0;
-    --brown:   #8B6F5E;
-    --dark:    #2C2016;
-    --green:   #4A7C59;
-    --green-l: #EAF2EC;
-    --orange:  #D4724A;
-    --orange-l:#FDF0EB;
-    --red-l:   #FDECEA;
-    --muted:   #9B8878;
-    --radius:  16px;
-  }
+:root{
+  --bg:#F7F0FF; --card:#fff; --dark:#3D3450; --muted:#B0A8C0;
+  --pink:#FFB5C8; --peach:#FFCBA4; --yellow:#FFE566;
+  --mint:#B5EAD7; --blue:#C7E9FF; --purple:#C9A8FF;
+  --purple-d:#8B5CF6; --lavender:#EDE4FF; --red-l:#FFF0F3;
+  --sand:#EDE4FF; --shadow:rgba(139,92,246,0.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);height:100vh;overflow:hidden;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── FULL HEIGHT GRID ── */
+.app{
+  display:grid;
+  grid-template-columns:220px 1fr 260px;
+  grid-template-rows:60px 1fr;
+  height:100vh;
+  overflow:hidden;
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--dark);
-    min-height: 100vh;
-  }
+/* ── TOPBAR ── */
+.topbar{
+  grid-column:1/-1;
+  background:white;border-bottom:1px solid var(--sand);
+  display:flex;align-items:center;padding:0 24px;gap:14px;
+  box-shadow:0 2px 16px rgba(139,92,246,0.07);z-index:10;
+}
+.topbar-logo{font-size:24px;}
+.topbar-title{font-size:17px;font-weight:900;color:var(--dark);}
+.topbar-sub{font-size:11px;color:var(--muted);font-weight:600;margin-left:4px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.streak-pill{
+  display:flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,var(--lavender),var(--purple));
+  border-radius:24px;padding:7px 14px;
+  font-size:13px;font-weight:800;color:var(--purple-d);
+  box-shadow:0 2px 10px var(--shadow);
+}
+.write-btn{
+  background:linear-gradient(135deg,#C9A8FF,#8B5CF6);
+  color:white;border:none;border-radius:20px;
+  padding:8px 18px;font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:800;cursor:pointer;
+  box-shadow:0 3px 14px var(--shadow);
+  transition:all .2s;
+}
+.write-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--shadow);}
 
-  /* ── header ── */
-  header {
-    background: var(--warm);
-    border-bottom: 1px solid var(--sand);
-    padding: 20px 40px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
+/* ── LEFT SIDEBAR ── */
+.sidebar-left{
+  background:white;border-right:1px solid var(--sand);
+  padding:24px 16px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-section{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);padding:16px 10px 10px;}
+.sidebar-section:first-child{padding-top:0;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:16px;cursor:pointer;margin-bottom:6px;
+  font-size:14px;font-weight:700;color:var(--muted);
+  transition:all .15s;border:none;background:none;width:100%;text-align:left;
+}
+.nav-item:hover{background:var(--lavender);color:var(--purple-d);}
+.nav-item.active{background:var(--lavender);color:var(--purple-d);}
+.nav-icon{font-size:20px;width:26px;text-align:center;}
+.sidebar-divider{height:1px;background:var(--sand);margin:8px 0;}
+.mood-filter{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 4px;}
+.mf-btn{
+  border:2px solid var(--sand);background:white;border-radius:18px;
+  padding:12px 6px;font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;
+}
+.mf-btn.all-btn{padding:12px;font-size:14px;grid-column:1/-1;border-radius:16px;}
+.mf-btn:hover,.mf-btn.active{border-color:var(--purple-d);background:var(--lavender);color:var(--purple-d);}
+.mf-face{width:36px;height:36px;vertical-align:middle;}
 
-  header .logo { font-size: 28px; }
+/* ── MAIN — fills remaining height ── */
+.main{
+  overflow-y:auto;
+  padding:28px 36px 20px;
+  display:flex;flex-direction:column;
+}
 
-  header h1 {
-    font-family: 'Lora', serif;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--dark);
-  }
+/* month nav */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0;}
+.month-title{font-size:20px;font-weight:900;color:var(--dark);}
+.nav-btn{background:white;border:1.5px solid var(--sand);border-radius:12px;padding:6px 14px;cursor:pointer;font-size:14px;font-weight:800;transition:all .15s;color:var(--dark);}
+.nav-btn:hover{background:var(--lavender);border-color:var(--purple);}
 
-  header p {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
+/* weekday headers */
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;flex-shrink:0;}
+.wd{text-align:center;font-size:11px;font-weight:800;color:var(--muted);padding:4px 0;text-transform:uppercase;letter-spacing:0.04em;}
 
-  /* ── layout ── */
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 24px;
-  }
+/* calendar — grows to fill space */
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  grid-auto-rows:minmax(60px,1fr);
+  gap:8px;
+  flex:1;
+  min-height:0;
+}
 
-  /* ── tabs ── */
-  .tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 32px;
-    background: var(--warm);
-    padding: 6px;
-    border-radius: 12px;
-    border: 1px solid var(--sand);
-  }
+/* ── DAY CELL — sticker style ── */
+.day-cell{
+  border-radius:50%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .12s,box-shadow .12s;
+  position:relative;
+  width:100%;
+  /* make each cell a circle that fills its grid cell */
+  aspect-ratio:1;
+  margin:auto;
+  max-width:min(100%, 90px);
+}
+.day-cell:not(.blank):hover{transform:scale(1.1);}
+.day-cell.blank{cursor:default;aspect-ratio:1;}
 
-  .tab {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all .2s;
-  }
+/* empty day — subtle white circle */
+.day-cell.no-entry{
+  background:white;
+  border:2px solid #EDE4FF;
+}
+.day-cell.no-entry .dn{font-size:13px;font-weight:800;color:#C9BFDF;}
 
-  .tab.active {
-    background: white;
-    color: var(--dark);
-    font-weight: 500;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
+/* STICKER STYLE — white border + drop shadow */
+.day-cell.has-entry{
+  border:3px solid white;
+  box-shadow:0 6px 20px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+}
+.day-cell.score-5{background:linear-gradient(145deg,#B5EAD7,#6DC8A0);}
+.day-cell.score-4{background:linear-gradient(145deg,#C7E9FF,#70C8F5);}
+.day-cell.score-3{background:linear-gradient(145deg,#FFE566,#FFCD00);}
+.day-cell.score-2{background:linear-gradient(145deg,#FFCBA4,#FFB07A);}
+.day-cell.score-1{background:linear-gradient(145deg,#FFB5C8,#FF7EA0);}
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+/* predicted — dashed purple sticker */
+.day-cell.predicted{
+  background:linear-gradient(145deg,#EDE4FF,#C9A8FF);
+  border:3px dashed #9B7FD4;
+  box-shadow:0 4px 14px rgba(155,127,212,0.25);
+}
+.pred-ai{
+  position:absolute;top:-4px;right:-4px;
+  background:#8B5CF6;color:white;
+  font-size:7px;font-weight:900;border-radius:8px;
+  padding:2px 5px;text-transform:uppercase;letter-spacing:0.04em;
+  box-shadow:0 2px 6px rgba(139,92,246,0.4);
+}
 
-  /* ── cards ── */
-  .card {
-    background: white;
-    border-radius: var(--radius);
-    border: 1px solid var(--sand);
-    padding: 28px;
-    margin-bottom: 20px;
-  }
+/* today ring */
+.day-cell.today-cell{
+  outline:3px solid #8B5CF6;
+  outline-offset:3px;
+}
 
-  .card h2 {
-    font-family: 'Lora', serif;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: var(--dark);
-  }
+/* face image inside circle */
+.face-img{
+  width:54%;height:54%;
+  object-fit:contain;
+  pointer-events:none;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+.face-img.pred-img{
+  opacity:0.9;
+  filter:drop-shadow(0 1px 2px rgba(139,92,246,0.3));
+}
+.dn{font-size:10px;font-weight:800;color:rgba(255,255,255,0.9);margin-top:1px;text-shadow:0 1px 2px rgba(0,0,0,0.15);}
+.no-entry .dn{color:#C9BFDF;text-shadow:none;}
 
-  /* ── form ── */
-  .form-group {
-    margin-bottom: 20px;
-  }
+/* legend */
+.legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;flex-shrink:0;}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--muted);}
+.leg-dot{width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 
-  label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--brown);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+/* ── RIGHT SIDEBAR ── */
+.sidebar-right{
+  background:white;border-left:1px solid var(--sand);
+  padding:20px 16px;overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+.sr-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:12px;margin-top:4px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--bg);border-radius:16px;padding:16px 12px;text-align:center;border:1px solid var(--sand);}
+.stat-num{font-size:24px;font-weight:900;color:var(--purple-d);}
+.stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-top:4px;}
+.lb-item{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:16px;margin-bottom:8px;background:var(--bg);border:1px solid transparent;}
+.lb-item.me{background:var(--lavender);border-color:var(--purple);}
+.lb-rank{font-size:15px;width:22px;text-align:center;font-weight:900;}
+.lb-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:linear-gradient(135deg,var(--purple),#8B5CF6);border:2px solid white;box-shadow:0 2px 8px var(--shadow);}
+.lb-info{flex:1;}
+.lb-name{font-size:12px;font-weight:800;color:var(--dark);}
+.lb-streak{font-size:10px;font-weight:700;color:var(--muted);}
+.lb-icon{font-size:18px;margin-left:auto;}
 
-  input[type="date"],
-  input[type="number"],
-  select,
-  textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--sand);
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    color: var(--dark);
-    background: var(--cream);
-    outline: none;
-    transition: border-color .2s;
-  }
+/* ── VIEWS ── */
+#view-patterns,#view-forecast{padding:4px 0;}
+.view-title{font-size:18px;font-weight:900;margin-bottom:18px;color:var(--dark);}
 
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--brown);
-    background: white;
-  }
+/* result cards */
+.rcard{border-radius:18px;padding:16px;margin-bottom:10px;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.rcard.peach{background:#FFF3EC;border:1.5px solid var(--peach);}
+.rcard.mint{background:#EDFAF5;border:1.5px solid var(--mint);}
+.rcard.red{background:var(--red-l);border:1.5px solid var(--pink);}
+.rcard.purple{background:var(--lavender);border:1.5px solid var(--purple);}
+.rc-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px;}
+.rc-val{font-size:14px;font-weight:600;color:var(--dark);line-height:1.6;}
+.flag-card{background:var(--red-l);border:1.5px solid var(--pink);border-radius:18px;padding:14px;margin-bottom:10px;font-size:13px;font-weight:700;color:#D45878;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;margin-bottom:6px;}
+.badge.positive{background:#EDFAF5;color:#4A9E72;}
+.badge.negative{background:var(--red-l);color:#D45878;}
+.badge.neutral{background:var(--lavender);color:var(--purple-d);}
 
-  textarea {
-    resize: vertical;
-    min-height: 120px;
-    line-height: 1.6;
-  }
+/* loading */
+.loading{text-align:center;padding:40px;color:var(--muted);}
+.spinner{width:28px;height:28px;border:3px solid var(--sand);border-top-color:var(--purple-d);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── mood slider ── */
-  .mood-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-  }
+/* chart */
+.chart-wrap{position:relative;height:220px;margin-top:14px;}
 
-  .mood-btn {
-    flex: 1;
-    padding: 14px 8px;
-    border: 2px solid var(--sand);
-    border-radius: 12px;
-    background: var(--cream);
-    cursor: pointer;
-    font-size: 22px;
-    transition: all .2s;
-    text-align: center;
-  }
+/* pred chips */
+.pred-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.pred-chip{text-align:center;padding:10px 10px;background:var(--lavender);border:2px dashed var(--purple);border-radius:14px;min-width:56px;}
+.pc-face{width:32px;height:32px;margin:0 auto;}
+.pc-score{font-size:12px;font-weight:900;color:var(--purple-d);margin-top:2px;}
+.pc-date{font-size:9px;color:var(--muted);font-weight:700;}
 
-  .mood-btn:hover { border-color: var(--brown); background: var(--warm); }
-  .mood-btn.selected { border-color: var(--orange); background: var(--orange-l); }
+/* ── JOURNAL PAGE ── */
+.journal-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto;}
+.journal-page.open{display:flex;flex-direction:column;}
+.jp-inner{
+  max-width:700px;width:100%;margin:0 auto;
+  padding:28px 40px 40px;
+  flex:1;display:flex;flex-direction:column;
+}
+.jp-back{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:var(--muted);margin-bottom:20px;flex-shrink:0;}
+.jp-back:hover{color:var(--purple-d);}
 
-  .mood-btn span {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
-    font-weight: 500;
-  }
+/* cat + bubble */
+.cat-wrap{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-shrink:0;}
+.cat-svg{flex-shrink:0;width:80px;height:80px;filter:drop-shadow(0 4px 12px rgba(139,92,246,0.2));}
+.speech-bubble{
+  background:white;border-radius:20px 20px 20px 4px;
+  padding:14px 18px;box-shadow:0 4px 24px rgba(139,92,246,0.12);
+  border:1.5px solid var(--lavender);
+  font-size:14px;font-weight:600;color:var(--dark);line-height:1.6;
+  font-family:'Lora',serif;font-style:italic;flex:1;
+}
 
-  /* ── button ── */
-  .btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all .2s;
-  }
+.jp-date-label{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:12px;flex-shrink:0;}
+.jp-face-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:10px;flex-shrink:0;}
+.jp-faces{display:flex;gap:12px;margin-bottom:18px;flex-shrink:0;}
+.jf-btn{
+  width:58px;height:58px;border-radius:50%;border:3px solid transparent;
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,0.1);
+}
+.jf-btn:nth-child(1){background:linear-gradient(145deg,#FFB5C8,#FF7EA0);}
+.jf-btn:nth-child(2){background:linear-gradient(145deg,#FFCBA4,#FFB07A);}
+.jf-btn:nth-child(3){background:linear-gradient(145deg,#FFE566,#FFCD00);}
+.jf-btn:nth-child(4){background:linear-gradient(145deg,#C7E9FF,#70C8F5);}
+.jf-btn:nth-child(5){background:linear-gradient(145deg,#B5EAD7,#6DC8A0);}
+.jf-btn.selected{border-color:#3D3450;transform:scale(1.15);box-shadow:0 6px 20px rgba(0,0,0,0.18);}
+.jf-face{width:36px;height:36px;pointer-events:none;}
 
-  .btn-primary {
-    background: var(--orange);
-    color: white;
-  }
+.jp-textarea{
+  width:100%;min-height:160px;padding:20px;
+  border:2px solid var(--sand);border-radius:20px;
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:600;
+  color:var(--dark);background:white;outline:none;resize:none;
+  line-height:1.7;transition:border-color .2s;
+  box-shadow:0 2px 12px rgba(139,92,246,0.06);
+  flex:1;
+}
+.jp-textarea:focus{border-color:var(--purple);}
+.jp-save{
+  width:100%;padding:13px;margin-top:12px;
+  background:linear-gradient(135deg,#C9A8FF,#8B5CF6);
+  color:white;border:none;border-radius:20px;
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 18px var(--shadow);
+  flex-shrink:0;
+}
+.jp-save:disabled{background:#DDD4F0;box-shadow:none;cursor:not-allowed;}
+.jp-save:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 26px var(--shadow);}
 
-  .btn-primary:hover { background: #c0623a; transform: translateY(-1px); }
-  .btn-primary:disabled { background: var(--sand); color: var(--muted); transform: none; cursor: not-allowed; }
+/* view entry overlay */
+.overlay{display:none;position:fixed;inset:0;background:rgba(61,52,80,0.45);z-index:150;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--bg);border-radius:24px;width:90%;max-width:460px;max-height:85vh;overflow-y:auto;padding:28px;animation:popIn .2s ease;}
+@keyframes popIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+.sheet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.sheet-title{font-size:16px;font-weight:900;color:var(--dark);display:flex;align-items:center;gap:8px;}
+.sheet-close{background:var(--sand);border:none;border-radius:10px;padding:5px 12px;cursor:pointer;font-size:15px;font-weight:800;}
+.ve-bubble{background:white;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);}
+.ve-text{font-size:14px;font-weight:600;color:var(--dark);line-height:1.6;}
 
-  .btn-secondary {
-    background: var(--green-l);
-    color: var(--green);
-    border: 1px solid #c5ddc8;
-  }
-
-  .btn-secondary:hover { background: #d5e8d8; }
-
-  /* ── result boxes ── */
-  .result-box {
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    animation: fadeIn .4s ease;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .result-box.green  { background: var(--green-l); border: 1px solid #c5ddc8; }
-  .result-box.orange { background: var(--orange-l); border: 1px solid #f5c4b0; }
-  .result-box.red    { background: var(--red-l); border: 1px solid #f5c1c1; }
-  .result-box.sand   { background: var(--warm); border: 1px solid var(--sand); }
-
-  .result-box .label {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .result-box .value {
-    font-family: 'Lora', serif;
-    font-size: 17px;
-    color: var(--dark);
-    line-height: 1.5;
-  }
-
-  .result-box .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    margin-bottom: 8px;
-  }
-
-  .badge.positive { background: var(--green-l); color: var(--green); }
-  .badge.negative { background: var(--red-l); color: #a32d2d; }
-  .badge.neutral  { background: var(--warm); color: var(--muted); }
-
-  /* ── entries list ── */
-  .entry-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--warm);
-  }
-
-  .entry-item:last-child { border-bottom: none; }
-
-  .entry-score {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-    background: var(--warm);
-  }
-
-  .entry-meta { flex: 1; }
-
-  .entry-date {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-
-  .entry-text {
-    font-size: 14px;
-    color: var(--dark);
-    line-height: 1.5;
-  }
-
-  .entry-sentiment {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  /* ── flag alert ── */
-  .flag-alert {
-    background: var(--red-l);
-    border: 1px solid #f5c1c1;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #a32d2d;
-    margin-top: 12px;
-  }
-
-  /* ── chart ── */
-  .chart-wrap {
-    position: relative;
-    height: 280px;
-    margin-top: 16px;
-  }
-
-  /* ── pattern cards ── */
-  .pattern-tag {
-    display: inline-block;
-    background: var(--warm);
-    border: 1px solid var(--sand);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 13px;
-    color: var(--dark);
-    margin: 4px 4px 4px 0;
-  }
-
-  .suggestion-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--warm);
-    font-size: 14px;
-    color: var(--dark);
-  }
-
-  .suggestion-item:last-child { border-bottom: none; }
-  .suggestion-item::before { content: '🌱'; flex-shrink: 0; }
-
-  /* ── empty state ── */
-  .empty {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-  }
-
-  .empty .emoji { font-size: 40px; margin-bottom: 12px; }
-  .empty p { font-size: 15px; line-height: 1.6; }
-
-  /* ── loading ── */
-  .loading {
-    text-align: center;
-    padding: 24px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--sand);
-    border-top-color: var(--orange);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-    margin: 0 auto 12px;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── two col grid ── */
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
-
-  /* ── counter badge ── */
-  .counter {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--orange-l);
-    border: 1px solid #f5c4b0;
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 13px;
-    color: var(--orange);
-    font-weight: 500;
-    margin-bottom: 20px;
-  }
+@media(max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-rows:60px 1fr;}
+  .sidebar-left,.sidebar-right{display:none;}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">🌿</div>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">🌿</div>
   <div>
-    <h1>Mood Journal</h1>
-    <p>A gentle space to check in with yourself</p>
+    <span class="topbar-title">Mood Journal</span>
+    <span class="topbar-sub">— your gentle daily check-in</span>
   </div>
-</header>
-
-<div class="container">
-
-  <!-- entry counter -->
-  <div id="counter" class="counter" style="display:none">
-    📖 <span id="counter-num">0</span> entries logged
+  <div class="topbar-right">
+    <div class="streak-pill">🔥 <span id="top-streak">0</span> day streak</div>
+    <button class="write-btn" onclick="openJournal()">✏️ Write today</button>
   </div>
+</div>
 
-  <!-- tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('journal')">📝 Journal</button>
-    <button class="tab" onclick="switchTab('entries')">📅 Entries</button>
-    <button class="tab" onclick="switchTab('patterns')">🔍 Patterns</button>
-    <button class="tab" onclick="switchTab('predict')">📈 Predict</button>
+<!-- LEFT SIDEBAR -->
+<div class="sidebar-left">
+  <div class="sidebar-section">Navigate</div>
+  <button class="nav-item active" onclick="showView('calendar',this)"><span class="nav-icon">📅</span>Calendar</button>
+  <button class="nav-item" onclick="showView('patterns',this)"><span class="nav-icon">🔍</span>Patterns</button>
+  <button class="nav-item" onclick="showView('forecast',this)"><span class="nav-icon">📈</span>Forecast</button>
+
+  <div class="sidebar-section">Filter by mood</div>
+  <div class="mood-filter">
+    <button class="mf-btn all-btn active" onclick="filterMood(0,this)">Show All</button>
+    <button class="mf-btn" onclick="filterMood(5,this)"><img class="mf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f604/emoji.svg"></button>
+    <button class="mf-btn" onclick="filterMood(4,this)"><img class="mf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f642/emoji.svg"></button>
+    <button class="mf-btn" onclick="filterMood(3,this)"><img class="mf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f636/emoji.svg"></button>
+    <button class="mf-btn" onclick="filterMood(2,this)"><img class="mf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f615/emoji.svg"></button>
+    <button class="mf-btn" onclick="filterMood(1,this)"><img class="mf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/emoji.svg"></button>
   </div>
+</div>
 
-  <!-- ══ TAB 1: JOURNAL ══ -->
-  <div id="tab-journal" class="tab-content active">
-
-    <div class="card">
-      <h2>How are you today?</h2>
-
-      <div class="form-group">
-        <label>Date</label>
-        <input type="date" id="date" />
-      </div>
-
-      <div class="form-group">
-        <label>Time of day</label>
-        <select id="time-of-day">
-          <option value="morning">☀️ Morning</option>
-          <option value="afternoon">🌤 Afternoon</option>
-          <option value="evening" selected>🌙 Evening</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Mood score</label>
-        <div class="mood-row">
-          <button class="mood-btn" onclick="selectMood(1)">😞<span>1</span></button>
-          <button class="mood-btn" onclick="selectMood(2)">😔<span>2</span></button>
-          <button class="mood-btn" onclick="selectMood(3)">😐<span>3</span></button>
-          <button class="mood-btn" onclick="selectMood(4)">🙂<span>4</span></button>
-          <button class="mood-btn" onclick="selectMood(5)">😊<span>5</span></button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Journal entry</label>
-        <textarea id="journal" placeholder="Write whatever is on your mind..."></textarea>
-      </div>
-
-      <button class="btn btn-primary" id="submit-btn" onclick="submitEntry()" disabled>
-        Save entry
-      </button>
+<!-- MAIN -->
+<div class="main">
+  <!-- Calendar view -->
+  <div id="view-calendar" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div class="month-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="month-title" id="month-label"></div>
+      <button class="nav-btn" onclick="changeMonth(1)">›</button>
     </div>
-
-    <!-- results appear here -->
-    <div id="results" style="display:none">
-
-      <div class="card">
-        <h2>Here's what I noticed 💬</h2>
-
-        <div id="reflection-box" class="result-box orange">
-          <div class="label">Reflection prompt</div>
-          <div class="value" id="reflection-text"></div>
-        </div>
-
-        <div class="grid-2">
-          <div id="sentiment-box" class="result-box green">
-            <div class="label">Sentiment</div>
-            <div id="sentiment-badge"></div>
-            <div class="value" id="sentiment-note"></div>
-          </div>
-          <div id="score-box" class="result-box sand">
-            <div class="label">Mood score</div>
-            <div class="value" id="score-display" style="font-size:36px;text-align:center;padding:8px 0"></div>
-          </div>
-        </div>
-
-        <div id="flag-box" style="display:none" class="flag-alert">
-          ⚠️ Some concerning phrases were noticed. Please reach out to someone you trust or use the resources below.
-        </div>
-
-        <div id="escalation-box" style="display:none" class="result-box red">
-          <div class="label">Wellness check</div>
-          <div class="value" id="escalation-text"></div>
-        </div>
-      </div>
-
+    <div class="weekdays">
+      <div class="wd">Sun</div><div class="wd">Mon</div><div class="wd">Tue</div>
+      <div class="wd">Wed</div><div class="wd">Thu</div><div class="wd">Fri</div><div class="wd">Sat</div>
     </div>
-
-  </div>
-
-  <!-- ══ TAB 2: ENTRIES ══ -->
-  <div id="tab-entries" class="tab-content">
-    <div class="card">
-      <h2>Your entries</h2>
-      <div id="entries-list">
-        <div class="empty">
-          <div class="emoji">📖</div>
-          <p>No entries yet.<br>Start by writing your first journal entry!</p>
-        </div>
-      </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:linear-gradient(145deg,#B5EAD7,#6DC8A0)"></div>Amazing</div>
+      <div class="leg"><div class="leg-dot" style="background:linear-gradient(145deg,#C7E9FF,#70C8F5)"></div>Good</div>
+      <div class="leg"><div class="leg-dot" style="background:linear-gradient(145deg,#FFE566,#FFCD00)"></div>Okay</div>
+      <div class="leg"><div class="leg-dot" style="background:linear-gradient(145deg,#FFCBA4,#FFB07A)"></div>Meh</div>
+      <div class="leg"><div class="leg-dot" style="background:linear-gradient(145deg,#FFB5C8,#FF7EA0)"></div>Hard day</div>
+      <div class="leg"><div class="leg-dot" style="background:linear-gradient(145deg,#EDE4FF,#C9A8FF);border:1.5px dashed #9B7FD4"></div>AI forecast</div>
     </div>
   </div>
 
-  <!-- ══ TAB 3: PATTERNS ══ -->
-  <div id="tab-patterns" class="tab-content">
-    <div class="card">
-      <h2>Mood patterns</h2>
-      <div id="patterns-content">
-        <div class="empty">
-          <div class="emoji">🔍</div>
-          <p>Write at least 7 entries to see your mood patterns.</p>
-        </div>
-      </div>
-      <button class="btn btn-secondary" onclick="loadPatterns()" style="margin-top:20px">
-        Analyse my patterns
-      </button>
-    </div>
+  <!-- Patterns view -->
+  <div id="view-patterns" style="display:none">
+    <div class="view-title">Your mood patterns 🔍</div>
+    <div id="patterns-content"><div class="loading"><div class="spinner"></div>Loading...</div></div>
   </div>
 
-  <!-- ══ TAB 4: PREDICT ══ -->
-  <div id="tab-predict" class="tab-content">
-    <div class="card">
-      <h2>7-day mood forecast</h2>
-      <div id="predict-content">
-        <div class="empty">
-          <div class="emoji">📈</div>
-          <p>Write at least 7 entries to generate a mood forecast.</p>
-        </div>
-      </div>
-      <button class="btn btn-secondary" onclick="loadPrediction()" style="margin-top:20px">
-        Generate forecast
-      </button>
-      <div class="chart-wrap" style="display:none" id="chart-wrap">
-        <canvas id="mood-chart"></canvas>
-      </div>
+  <!-- Forecast view -->
+  <div id="view-forecast" style="display:none">
+    <div class="view-title">7-day forecast 📈</div>
+    <div id="forecast-content"></div>
+    <div class="chart-wrap" id="chart-wrap" style="display:none"><canvas id="mood-chart"></canvas></div>
+  </div>
+</div>
+
+<!-- RIGHT SIDEBAR -->
+<div class="sidebar-right">
+  <div>
+    <div class="sr-title">🏆 Streak ranking</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-entries">0</div><div class="stat-label">Total entries</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-streak">0</div><div class="stat-label">Day streak 🔥</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">Avg mood</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-best">—</div><div class="stat-label">Best streak</div></div>
     </div>
   </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+    <div>
+      <div class="sr-title">Community</div>
+      <div id="leaderboard"></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-align:center;line-height:1.6;padding:16px 0">Keep journaling daily to<br>climb the leaderboard! 🌟</div>
+  </div>
+</div>
 
+</div><!-- end .app -->
+
+<!-- JOURNAL PAGE -->
+<div class="journal-page" id="journal-page">
+  <div class="jp-inner">
+    <button class="jp-back" onclick="closeJournal()">← Back to calendar</button>
+    <div class="cat-wrap">
+      <!-- Noto cat emoji -->
+      <img class="cat-svg" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f431/emoji.svg" alt="cat">
+      <div class="speech-bubble" id="cat-greeting">Hi there! 🐾 How's your day been? Any little moments — exciting, cozy, or just ordinary — that you'd like to remember?</div>
+    </div>
+
+    <div class="jp-date-label" id="jp-date-label"></div>
+    <div class="jp-face-label">How are you feeling?</div>
+    <div class="jp-faces">
+      <button class="jf-btn" onclick="selMood(1)"><img class="jf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/emoji.svg"></button>
+      <button class="jf-btn" onclick="selMood(2)"><img class="jf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f615/emoji.svg"></button>
+      <button class="jf-btn" onclick="selMood(3)"><img class="jf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f636/emoji.svg"></button>
+      <button class="jf-btn" onclick="selMood(4)"><img class="jf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f642/emoji.svg"></button>
+      <button class="jf-btn" onclick="selMood(5)"><img class="jf-face" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f604/emoji.svg"></button>
+    </div>
+
+    <textarea class="jp-textarea" id="jp-text" placeholder="Write freely here — no rules, no judgment. Just you and your day..."></textarea>
+    <button class="jp-save" id="jp-save" onclick="submitEntry()" disabled>Save today's entry 💜</button>
+    <div id="jp-result" style="margin-top:20px"></div>
+  </div>
+</div>
+
+<!-- ENTRY VIEWER OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="sheet">
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheet-title"></div>
+      <button class="sheet-close" onclick="document.getElementById('overlay').classList.remove('open')">✕</button>
+    </div>
+    <div id="sheet-body"></div>
+  </div>
 </div>
 
 <script>
-  // ── state ──────────────────────────────────────────────────────
-  let selectedMood = null;
-  let moodChart    = null;
+// Noto emoji base URL
+const NOTO = 'https://fonts.gstatic.com/s/e/notoemoji/latest/';
+const notoFace  = {5:'1f604',4:'1f642',3:'1f636',2:'1f615',1:'1f622'};
+const notoPred  = {5:'2728', 4:'1f338',3:'1f4ab',2:'1f327',1:'1fac2'};
 
-  // ── set today's date ───────────────────────────────────────────
-  document.getElementById('date').value = new Date().toISOString().split('T')[0];
+function notoImg(code,cls=''){
+  return `<img src="${NOTO}${code}/emoji.svg" class="face-img ${cls}" onerror="this.style.display='none'">`;
+}
 
-  // ── tab switching ──────────────────────────────────────────────
-  function switchTab(name) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelector(`#tab-${name}`).classList.add('active');
-    event.target.classList.add('active');
-    if (name === 'entries') renderEntries();
+// ── state ─────────────────────────────────────────────────────
+let entries={}, predictions={}, selectedMood=null;
+let currentYear=new Date().getFullYear(), currentMonth=new Date().getMonth();
+let filterScore=0, moodChart=null, journalDate=null;
+const today=new Date().toISOString().split('T')[0];
+
+const catGreets=[
+  "Hi there! 🐾 How's your day been? Any little moments — exciting, cozy, or just ordinary — that you'd like to remember?",
+  "Hey, you showed up! 🐾 That alone is something. What happened today worth writing down?",
+  "Psst... I saved your spot 🐾 Tell me one thing about your day — big or small, it all counts.",
+  "You're back! 🐾 I've been waiting. What's been on your mind today?",
+  "Hello, friend 🐾 Your journal missed you. What story does today have to tell?",
+];
+
+const fakeBoard=[
+  {name:'Alex M.',  streak:21, avatar:'🐻'},
+  {name:'Jamie K.', streak:14, avatar:'🦊'},
+  {name:'Sam P.',   streak:9,  avatar:'🐼'},
+  {name:'You',      streak:0,  avatar:'🐱', me:true},
+  {name:'Riley T.', streak:3,  avatar:'🐰'},
+];
+
+// ── init ──────────────────────────────────────────────────────
+window.onload=async()=>{
+  await loadEntries();
+  await loadPredictions();
+  renderCalendar();
+  updateStats();
+  renderLeaderboard();
+};
+
+async function loadEntries(){
+  try{const res=await fetch('/api/entries');const arr=await res.json();entries={};arr.forEach(e=>{entries[e.date]=e;});}catch(e){}
+}
+async function loadPredictions(){
+  try{const res=await fetch('/api/predict/status');const data=await res.json();if(data.status==='done'){predictions={};data.predicted_dates.forEach((d,i)=>{predictions[d]=data.predicted_scores[i];});}}catch(e){}
+}
+
+// ── calendar ──────────────────────────────────────────────────
+function renderCalendar(){
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('month-label').textContent=`${months[currentMonth]} ${currentYear}`;
+  const firstDay=new Date(currentYear,currentMonth,1).getDay();
+  const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+
+  for(let i=0;i<firstDay;i++){
+    const b=document.createElement('div');b.className='day-cell blank';grid.appendChild(b);
   }
 
-  // ── mood selection ─────────────────────────────────────────────
-  function selectMood(score) {
-    selectedMood = score;
-    document.querySelectorAll('.mood-btn').forEach((btn, i) => {
-      btn.classList.toggle('selected', i + 1 === score);
-    });
-    checkReady();
-  }
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cell=document.createElement('div');
+    const ent=entries[ds], pred=predictions[ds];
+    const isToday=ds===today;
 
-  function checkReady() {
-    const journal = document.getElementById('journal').value.trim();
-    document.getElementById('submit-btn').disabled = !(selectedMood && journal.length > 0);
-  }
-
-  document.getElementById('journal').addEventListener('input', checkReady);
-
-  // ── submit entry ───────────────────────────────────────────────
-  async function submitEntry() {
-    const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-
-    const body = {
-      date:         document.getElementById('date').value,
-      mood_score:   selectedMood,
-      journal_text: document.getElementById('journal').value.trim(),
-      time_of_day:  document.getElementById('time-of-day').value,
-    };
-
-    try {
-      const res  = await fetch('/api/submit', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
-      });
-      const data = await res.json();
-      showResults(data, body);
-
-      // update counter
-      const counter = document.getElementById('counter');
-      counter.style.display = 'inline-flex';
-      document.getElementById('counter-num').textContent = data.total_entries;
-
-      // reset form
-      document.getElementById('journal').value = '';
-      selectedMood = null;
-      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-
-    } catch (e) {
-      alert('Something went wrong. Is the server running?');
+    if(filterScore>0 && ent && ent.mood_score!==filterScore){
+      cell.className='day-cell no-entry';
+      cell.innerHTML=`<div class="dn">${d}</div>`;
+      cell.onclick=()=>openJournal(ds);
+      if(isToday) cell.classList.add('today-cell');
+      grid.appendChild(cell); continue;
     }
 
-    btn.disabled = false;
-    btn.textContent = 'Save entry';
-  }
-
-  // ── show results ───────────────────────────────────────────────
-  function showResults(data, body) {
-    document.getElementById('results').style.display = 'block';
-
-    // reflection
-    document.getElementById('reflection-text').textContent = data.reflection;
-
-    // sentiment
-    const s = data.sentiment;
-    const badge = document.getElementById('sentiment-badge');
-    badge.innerHTML = `<span class="badge ${s.label}">${s.label}</span>`;
-    document.getElementById('sentiment-note').textContent =
-      s.brief_note !== 'neutral' ? `Keywords: ${s.brief_note}` : 'No strong sentiment words detected';
-
-    // score emoji
-    const emojis = { 1:'😞', 2:'😔', 3:'😐', 4:'🙂', 5:'😊' };
-    document.getElementById('score-display').textContent =
-      `${emojis[body.mood_score]} ${body.mood_score}`;
-
-    // flags
-    const flagBox = document.getElementById('flag-box');
-    flagBox.style.display = s.flags.length > 0 ? 'block' : 'none';
-
-    // escalation
-    const escBox  = document.getElementById('escalation-box');
-    const escText = document.getElementById('escalation-text');
-    if (data.escalation) {
-      const esc    = data.escalation;
-      const colors = { green: 'green', yellow: 'orange', red: 'red' };
-      escBox.className = `result-box ${colors[esc.risk_level] || 'orange'}`;
-      escText.textContent = esc.suggested_action;
-      if (esc.resource_link) {
-        escText.innerHTML += `<br><a href="${esc.resource_link}" target="_blank" style="color:var(--orange);font-size:13px;margin-top:6px;display:inline-block">Get support →</a>`;
-      }
-      escBox.style.display = 'block';
+    if(ent){
+      const s=ent.mood_score;
+      cell.className=`day-cell has-entry score-${s}`;
+      cell.innerHTML=notoImg(notoFace[s])+`<div class="dn">${d}</div>`;
+      cell.onclick=()=>openViewEntry(ds);
+    } else if(pred){
+      const r=Math.round(pred);
+      cell.className='day-cell predicted';
+      cell.innerHTML=`<span class="pred-ai">AI</span>${notoImg(notoPred[r]||'1f4ab','pred-img')}<div class="dn" style="color:rgba(100,70,180,0.75)">${d}</div>`;
+      cell.onclick=()=>openPredictDay(ds,pred);
     } else {
-      escBox.style.display = 'none';
+      cell.className='day-cell no-entry';
+      cell.innerHTML=`<div class="dn">${d}</div>`;
+      cell.onclick=()=>openJournal(ds);
     }
-
-    // scroll to results
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if(isToday) cell.classList.add('today-cell');
+    grid.appendChild(cell);
   }
+}
 
-  // ── render entries list ────────────────────────────────────────
-  async function renderEntries() {
-    const res     = await fetch('/api/entries');
-    const entries = await res.json();
-    const list    = document.getElementById('entries-list');
+function changeMonth(dir){
+  currentMonth+=dir;
+  if(currentMonth>11){currentMonth=0;currentYear++;}
+  if(currentMonth<0){currentMonth=11;currentYear--;}
+  renderCalendar();
+}
 
-    if (entries.length === 0) {
-      list.innerHTML = `<div class="empty"><div class="emoji">📖</div><p>No entries yet.<br>Start by writing your first journal entry!</p></div>`;
-      return;
-    }
+function filterMood(score,btn){
+  filterScore=score;
+  document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar();
+}
 
-    const emojis = { 1:'😞', 2:'😔', 3:'😐', 4:'🙂', 5:'😊' };
-    list.innerHTML = [...entries].reverse().map(e => `
-      <div class="entry-item">
-        <div class="entry-score">${emojis[e.mood_score]}</div>
-        <div class="entry-meta">
-          <div class="entry-date">${e.date} · ${e.time_of_day}</div>
-          <div class="entry-text">${e.journal_text}</div>
-          <div class="entry-sentiment">
-            <span class="badge ${e.sentiment_label}">${e.sentiment_label}</span>
-            ${e.sentiment_note !== 'neutral' ? `· ${e.sentiment_note}` : ''}
-            ${e.sentiment_flags.length > 0 ? '⚠️' : ''}
-          </div>
-        </div>
+// ── stats ─────────────────────────────────────────────────────
+function calcStreak(){
+  let s=0,check=new Date(today);
+  while(true){const d=check.toISOString().split('T')[0];if(entries[d]){s++;check.setDate(check.getDate()-1);}else break;}
+  return s;
+}
+function calcBest(){
+  const dates=Object.keys(entries).sort();if(!dates.length)return 0;
+  let best=1,cur=1;
+  for(let i=1;i<dates.length;i++){const diff=(new Date(dates[i])-new Date(dates[i-1]))/(864e5);if(diff===1){cur++;best=Math.max(best,cur);}else cur=1;}
+  return best;
+}
+function updateStats(){
+  const arr=Object.values(entries),streak=calcStreak(),best=calcBest();
+  const avg=arr.length?(arr.reduce((s,e)=>s+e.mood_score,0)/arr.length).toFixed(1):'—';
+  document.getElementById('top-streak').textContent=streak;
+  document.getElementById('stat-entries').textContent=arr.length;
+  document.getElementById('stat-streak').textContent=streak;
+  document.getElementById('stat-avg').textContent=avg;
+  document.getElementById('stat-best').textContent=best;
+  fakeBoard.forEach(p=>{if(p.me)p.streak=streak;});
+  fakeBoard.sort((a,b)=>b.streak-a.streak);
+  renderLeaderboard();
+}
+
+function renderLeaderboard(){
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById('leaderboard').innerHTML=fakeBoard.map((p,i)=>`
+    <div class="lb-item ${p.me?'me':''}">
+      <div class="lb-rank">${medals[i]||i+1}</div>
+      <div class="lb-avatar">${p.avatar}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.me?'You ⭐':p.name}</div>
+        <div class="lb-streak">${p.streak} day streak</div>
       </div>
-    `).join('');
-  }
+      <div class="lb-icon">${p.streak>=7?'🔥':p.streak>=3?'✨':'💪'}</div>
+    </div>
+  `).join('');
+}
 
-  // ── load patterns ──────────────────────────────────────────────
-  async function loadPatterns() {
-    const content = document.getElementById('patterns-content');
-    content.innerHTML = `<div class="loading"><div class="spinner"></div>Analysing your patterns...</div>`;
+// ── views ─────────────────────────────────────────────────────
+function showView(name,btn){
+  ['calendar','patterns','forecast'].forEach(v=>{
+    const el=document.getElementById(`view-${v}`);
+    if(el) el.style.display=v===name?(v==='calendar'?'flex':'block'):'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(name==='patterns') loadPatterns();
+  if(name==='forecast') loadForecast();
+}
 
-    try {
-      const res  = await fetch('/api/patterns');
-      const data = await res.json();
+// ── journal page ──────────────────────────────────────────────
+function openJournal(date){
+  journalDate=date||today;selectedMood=null;
+  document.getElementById('journal-page').classList.add('open');
+  document.getElementById('jp-date-label').textContent=journalDate;
+  document.getElementById('jp-text').value='';
+  document.getElementById('jp-save').disabled=true;
+  document.getElementById('jp-save').textContent="Save today's entry 💜";
+  document.getElementById('jp-save').style.background='linear-gradient(135deg,#C9A8FF,#8B5CF6)';
+  document.getElementById('jp-result').innerHTML='';
+  document.querySelectorAll('.jf-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('cat-greeting').textContent=catGreets[Math.floor(Math.random()*catGreets.length)];
+  setTimeout(()=>{
+    const j=document.getElementById('jp-text');
+    if(j) j.addEventListener('input',checkReady);
+  },100);
+}
+function closeJournal(){document.getElementById('journal-page').classList.remove('open');}
 
-      if (data.error) {
-        content.innerHTML = `<div class="empty"><div class="emoji">🔍</div><p>${data.error}</p></div>`;
-        return;
-      }
+function selMood(s){
+  selectedMood=s;
+  document.querySelectorAll('.jf-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===s));
+  checkReady();
+}
+function checkReady(){
+  const j=document.getElementById('jp-text'),b=document.getElementById('jp-save');
+  if(j&&b) b.disabled=!(selectedMood&&j.value.trim().length>0);
+}
 
-      content.innerHTML = `
-        <div class="result-box orange" style="margin-bottom:16px">
-          <div class="label">Insight</div>
-          <div class="value">${data.insight}</div>
-        </div>
+async function submitEntry(){
+  const btn=document.getElementById('jp-save');
+  btn.disabled=true; btn.textContent='Saving... ✨';
+  const body={date:journalDate,mood_score:selectedMood,journal_text:document.getElementById('jp-text').value.trim(),time_of_day:'evening'};
+  try{
+    const res=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await res.json();
+    entries[journalDate]={date:journalDate,mood_score:selectedMood,journal_text:body.journal_text,time_of_day:'evening',sentiment_label:data.sentiment.label,sentiment_note:data.sentiment.brief_note,sentiment_flags:data.sentiment.flags};
+    renderCalendar(); updateStats();
+    const s=data.sentiment; let html='';
 
-        <div style="margin-bottom:20px">
-          <div class="label" style="margin-bottom:10px">Patterns noticed</div>
-          ${data.patterns.map(p => `<span class="pattern-tag">✦ ${p}</span>`).join('')}
-        </div>
+    // mood-aware cat response based on score
+    const catResponses = {
+      5: "That sounds like a wonderful day! 🐾 I love hearing this — hold onto that feeling ✨",
+      4: "Sounds like a good one! 🐾 Little wins and good moments — that's what it's all about.",
+      3: "Thank you for writing 🐾 Some days are just... in the middle, and that's perfectly okay.",
+      2: "That sounds tough 🐾 I'm glad you showed up anyway. Be gentle with yourself tonight.",
+      1: "That sounds really hard 🐾 I'm here, and I hear you. You don't have to carry it alone."
+    };
+    document.getElementById('cat-greeting').textContent = catResponses[body.mood_score] || catResponses[3];
 
-        <div>
-          <div class="label" style="margin-bottom:8px">Suggestions</div>
-          ${data.suggestions.map(s => `<div class="suggestion-item">${s}</div>`).join('')}
-        </div>
+    // warning FIRST if needed
+    if(s.flags&&s.flags.length>0) html+=`<div class="flag-card">⚠️ Some concerning phrases were noticed. Please reach out to someone you trust.</div>`;
+    if(data.escalation){const esc=data.escalation;html+=`<div class="rcard red"><div class="rc-label">Wellness check</div><div class="rc-val">${esc.suggested_action}${esc.resource_link?`<br><a href="${esc.resource_link}" target="_blank" style="color:#D45878;font-size:12px;margin-top:4px;display:inline-block">Get support →</a>`:''}</div></div>`;}
 
-        ${data.show_resources ? `
-        <div class="flag-alert" style="margin-top:16px">
-          💙 Your scores suggest you might benefit from some extra support.
-          <a href="https://students.wustl.edu/habif-health-and-wellness-center/" target="_blank" style="color:#a32d2d;display:block;margin-top:6px">WashU Habif Health & Wellness Center →</a>
-        </div>` : ''}
-      `;
-    } catch (e) {
-      content.innerHTML = `<div class="empty"><p>Could not load patterns. Is the server running?</p></div>`;
+    // cat's reflection as a speech bubble instead of a plain card
+    html+=`<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">
+      <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f431/emoji.svg" style="width:44px;height:44px;flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(139,92,246,0.2))">
+      <div style="background:white;border-radius:16px 16px 16px 4px;padding:14px 16px;border:1.5px solid var(--lavender);font-size:14px;font-weight:600;color:var(--dark);line-height:1.6;font-family:'Lora',serif;font-style:italic;flex:1;box-shadow:0 2px 12px rgba(139,92,246,0.08)">
+        ${data.reflection}
+      </div>
+    </div>`;
+
+    const sentColor = s.label==='positive' ? 'mint' : s.label==='negative' ? 'red' : 'purple';
+    // only show sentiment box if no escalation — it's redundant when warning is showing
+    if (!data.escalation && !(s.flags && s.flags.length > 0)) {
+      html+=`<div class="rcard ${sentColor}"><div class="rc-label">Sentiment</div><span class="badge ${s.label}">${s.label}</span><div class="rc-val" style="font-size:13px">${s.brief_note!=='neutral'?'Keywords: '+s.brief_note:'No strong sentiment words detected'}</div></div>`;
     }
-  }
+    document.getElementById('jp-result').innerHTML=html;
+    btn.textContent='✓ Saved! 💜'; btn.style.background='linear-gradient(135deg,#B5EAD7,#4A9E72)';
+    fetch('/api/predict').then(()=>{setTimeout(async()=>{await loadPredictions();renderCalendar();},12000);});
+  }catch(e){alert('Something went wrong. Is the server running?');btn.disabled=false;btn.textContent="Save today's entry 💜";}
+}
 
-  // ── load prediction ────────────────────────────────────────────
-  async function loadPrediction() {
-    const content  = document.getElementById('predict-content');
-    const chartWrap = document.getElementById('chart-wrap');
-    content.innerHTML = `<div class="loading"><div class="spinner"></div>Training LSTM model... this takes a moment ☕</div>`;
-    chartWrap.style.display = 'none';
+// ── view entry ────────────────────────────────────────────────
+function openViewEntry(date){
+  const e=entries[date]; if(!e) return;
+  const faceHtml=`<img src="${NOTO}${notoFace[e.mood_score]}/emoji.svg" style="width:28px;height:28px;vertical-align:middle">`;
+  document.getElementById('sheet-title').innerHTML=`${date} &nbsp; ${faceHtml}`;
+  document.getElementById('sheet-body').innerHTML=`
+    <div class="ve-bubble"><div class="rc-label" style="margin-bottom:6px">Journal entry</div><div class="ve-text">${e.journal_text}</div></div>
+    <div class="rcard mint"><div class="rc-label">Sentiment</div><span class="badge ${e.sentiment_label}">${e.sentiment_label}</span><div class="rc-val" style="font-size:13px">${e.sentiment_note!=='neutral'?'Keywords: '+e.sentiment_note:'No strong sentiment words'}</div></div>
+    ${e.sentiment_flags&&e.sentiment_flags.length>0?'<div class="flag-card">⚠️ Concerning phrases were detected in this entry.</div>':''}
+  `;
+  document.getElementById('overlay').classList.add('open');
+}
 
-    try {
-      const res  = await fetch('/api/predict');
-      const data = await res.json();
+// ── predicted day ─────────────────────────────────────────────
+function openPredictDay(date,score){
+  const r=Math.round(score);
+  document.getElementById('sheet-title').textContent=`${date} — AI Forecast`;
+  document.getElementById('sheet-body').innerHTML=`
+    <div style="text-align:center;padding:20px 0">
+      <img src="${NOTO}${notoPred[r]||'1f4ab'}/emoji.svg" style="width:72px;height:72px;margin-bottom:10px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.15))">
+      <div style="font-size:28px;font-weight:900;color:var(--purple-d)">${score.toFixed(1)}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-top:4px">AI predicted mood score</div>
+    </div>
+    <div class="rcard purple"><div class="rc-label">About this prediction</div><div class="rc-val">Based on your recent patterns. Add a real entry to replace it with your actual experience.</div></div>
+    <button onclick="document.getElementById('overlay').classList.remove('open');openJournal('${date}');" style="width:100%;padding:14px;margin-top:8px;background:linear-gradient(135deg,#C9A8FF,#8B5CF6);color:white;border:none;border-radius:16px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px var(--shadow)">✏️ Write real entry for this day</button>
+  `;
+  document.getElementById('overlay').classList.add('open');
+}
 
-      if (data.error) {
-        content.innerHTML = `<div class="empty"><div class="emoji">📈</div><p>${data.error}</p></div>`;
-        return;
-      }
+function closeOverlay(e){if(e.target===document.getElementById('overlay'))document.getElementById('overlay').classList.remove('open');}
 
-      content.innerHTML = `
-        <p style="font-size:14px;color:var(--muted);margin-bottom:8px">
-          Based on your last ${data.historical_scores.length} entries, here's what the model predicts:
-        </p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-          ${data.predicted_scores.map((s, i) => {
-            const emojis = { 1:'😞', 2:'😔', 3:'😐', 4:'🙂', 5:'😊' };
-            const emoji  = emojis[Math.round(s)] || '😐';
-            return `<div style="text-align:center;padding:12px 16px;background:var(--orange-l);border:1px solid #f5c4b0;border-radius:12px;min-width:60px">
-              <div style="font-size:20px">${emoji}</div>
-              <div style="font-size:13px;font-weight:500;color:var(--orange);margin-top:4px">${s}</div>
-              <div style="font-size:11px;color:var(--muted)">${data.predicted_dates[i].slice(5)}</div>
-            </div>`;
-          }).join('')}
-        </div>
-      `;
+// ── patterns ──────────────────────────────────────────────────
+async function loadPatterns(){
+  document.getElementById('patterns-content').innerHTML='<div class="loading"><div class="spinner"></div>Analysing your patterns...</div>';
+  try{
+    const res=await fetch('/api/patterns');const data=await res.json();
+    if(data.error){document.getElementById('patterns-content').innerHTML=`<div style="padding:30px;text-align:center;color:var(--muted);font-weight:600">${data.error}</div>`;return;}
+    document.getElementById('patterns-content').innerHTML=`
+      <div class="rcard peach"><div class="rc-label">Insight ✨</div><div class="rc-val">${data.insight}</div></div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:10px">Patterns noticed</div>
+        ${data.patterns.map(p=>`<span style="display:inline-block;background:white;border:1.5px solid var(--sand);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--dark);margin:4px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">✦ ${p}</span>`).join('')}
+      </div>
+      <div><div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:10px">Suggestions</div>
+      ${data.suggestions.map(s=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--sand);font-size:14px;font-weight:600"><span>🌱</span><span>${s}</span></div>`).join('')}</div>
+      ${data.show_resources?`<div class="flag-card" style="margin-top:16px">💙 Your scores suggest you might benefit from some extra support. <a href="https://counseling.washu.edu/" target="_blank" style="color:#D45878;display:block;margin-top:4px;font-weight:800">WashU Habif Center →</a></div>`:''}
+    `;
+  }catch(e){document.getElementById('patterns-content').innerHTML='<div style="padding:30px;text-align:center;color:var(--muted);font-weight:600">Could not load. Is the server running?</div>';}
+}
 
-      // draw chart
-      chartWrap.style.display = 'block';
-      if (moodChart) moodChart.destroy();
-
-      const ctx = document.getElementById('mood-chart').getContext('2d');
-      moodChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: [...data.historical_dates, ...data.predicted_dates],
-          datasets: [
-            {
-              label: 'Historical',
-              data: [...data.historical_scores, null],
-              borderColor: '#4A7C59',
-              backgroundColor: 'rgba(74,124,89,0.08)',
-              borderWidth: 2,
-              pointRadius: 4,
-              pointBackgroundColor: '#4A7C59',
-              tension: 0.3,
-              fill: true,
-            },
-            {
-              label: 'Predicted',
-              data: [...data.historical_scores.map(() => null), data.historical_scores[data.historical_scores.length-1], ...data.predicted_scores],
-              borderColor: '#D4724A',
-              borderDash: [6, 3],
-              borderWidth: 2,
-              pointRadius: 4,
-              pointBackgroundColor: '#D4724A',
-              pointStyle: 'rect',
-              tension: 0.3,
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              min: 0.5,
-              max: 5.5,
-              ticks: {
-                stepSize: 1,
-                callback: v => ({1:'😞',2:'😔',3:'😐',4:'🙂',5:'😊'}[v] || ''),
-              },
-              grid: { color: 'rgba(0,0,0,0.04)' }
-            },
-            x: {
-              ticks: { maxTicksLimit: 10, font: { size: 11 } },
-              grid: { display: false }
-            }
-          },
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: ctx => `Score: ${ctx.parsed.y}`
-              }
-            }
-          }
-        }
-      });
-
-    } catch (e) {
-      content.innerHTML = `<div class="empty"><p>Could not load prediction. Is the server running?</p></div>`;
-    }
-  }
+// ── forecast ──────────────────────────────────────────────────
+async function loadForecast(){
+  document.getElementById('forecast-content').innerHTML='<div class="loading"><div class="spinner"></div>Training model... about 10 seconds ☕</div>';
+  document.getElementById('chart-wrap').style.display='none';
+  await fetch('/api/predict');
+  const poll=setInterval(async()=>{
+    const res=await fetch('/api/predict/status');const data=await res.json();
+    if(data.status==='training')return;
+    clearInterval(poll);
+    if(data.status==='error'){document.getElementById('forecast-content').innerHTML=`<div style="padding:20px;color:var(--muted);font-weight:600">Error: ${data.error}</div>`;return;}
+    predictions={};data.predicted_dates.forEach((d,i)=>{predictions[d]=data.predicted_scores[i];});
+    renderCalendar();
+    document.getElementById('forecast-content').innerHTML=`
+      <div class="pred-row">
+        ${data.predicted_scores.map((s,i)=>{const r=Math.round(s);return`<div class="pred-chip"><img class="pc-face" src="${NOTO}${notoPred[r]||'1f4ab'}/emoji.svg"><div class="pc-score">${s.toFixed(1)}</div><div class="pc-date">${data.predicted_dates[i].slice(5)}</div></div>`;}).join('')}
+      </div>
+      <p style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">Predictions appear as dashed circles on your calendar too.</p>
+    `;
+    document.getElementById('chart-wrap').style.display='block';
+    if(moodChart) moodChart.destroy();
+    const ctx=document.getElementById('mood-chart').getContext('2d');
+    moodChart=new Chart(ctx,{type:'line',data:{labels:[...data.historical_dates,...data.predicted_dates],datasets:[{label:'Historical',data:[...data.historical_scores,null],borderColor:'#6DC8A0',backgroundColor:'rgba(109,200,160,0.1)',borderWidth:2.5,pointRadius:4,tension:0.4,fill:true},{label:'AI Forecast',data:[...data.historical_scores.map(()=>null),data.historical_scores[data.historical_scores.length-1],...data.predicted_scores],borderColor:'#9B7FD4',borderDash:[5,3],borderWidth:2.5,pointRadius:4,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0.5,max:5.5,ticks:{stepSize:1,font:{family:'Nunito',size:11},callback:v=>{const f={1:'1f622',2:'1f615',3:'1f636',4:'1f642',5:'1f604'};return v;}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{maxTicksLimit:10,font:{family:'Nunito',size:10}},grid:{display:false}}},plugins:{legend:{position:'top',labels:{font:{family:'Nunito',size:12},boxWidth:12}}}}});
+  },3000);
+}
 </script>
-
 </body>
 </html>

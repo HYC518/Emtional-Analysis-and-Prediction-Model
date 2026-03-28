@@ -65,8 +65,8 @@ def submit():
     reflection = client.ask(
         Prompts.REFLECTION,
         f"Mood score: {mood_score}/5\n"
-        f"Time of day: {time_of_day}\n"
-        f"Day of week: {day_of_week}"
+        f"Day of week: {day_of_week}\n"
+        f"Journal entry: {journal}"
     )
 
     # store entry
@@ -87,15 +87,16 @@ def submit():
     prediction_cache.clear()
 
     # escalation check
+    # only use CURRENT entry flags — prevents old flags from re-triggering on new positive entries
     recent_scores = [e['mood_score'] for e in entries[-5:]]
-    all_flags     = [f for e in entries[-5:] for f in e['sentiment_flags']]
-    needs_esc     = sa.should_escalate(recent_scores, all_flags)
+    current_flags = result.flags
+    needs_esc     = sa.should_escalate(recent_scores, current_flags)
 
     escalation = None
     if needs_esc:
         escalation = client.ask_json(
             Prompts.ESCALATION,
-            json.dumps({"last_5_scores": recent_scores, "sentiment_flags": all_flags})
+            json.dumps({"last_5_scores": recent_scores, "sentiment_flags": current_flags})
         )
 
     return jsonify({
