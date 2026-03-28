@@ -777,7 +777,7 @@ async function loadForecast(){
     renderCalendar();
     document.getElementById('forecast-content').innerHTML=`
       <div class="pred-row">
-        ${data.predicted_scores.map((s,i)=>{const r=Math.round(s);return`<div class="pred-chip"><img class="pc-face" src="${NOTO}${notoPred[r]||'1f4ab'}/emoji.svg"><div class="pc-score">${s.toFixed(1)}</div><div class="pc-date">${data.predicted_dates[i].slice(5)}</div></div>`;}).join('')}
+        ${data.predicted_scores.map((s,i)=>{const r=Math.round(s);return`<div class="pred-chip"><div class="pc-face" style="font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;height:32px">${notoPred[r]||'🌫️'}</div><div class="pc-score">${s.toFixed(1)}</div><div class="pc-date">${data.predicted_dates[i].slice(5)}</div></div>`;}).join('')}
       </div>
       <p style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">Predictions appear as dashed circles on your calendar too.</p>
     `;
