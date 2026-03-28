@@ -17,7 +17,7 @@ from data_preprocessor import DataPreprocessor
 from sentiment_analyzer import SentimentAnalyzer
 from predictor import MoodPredictor
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 CORS(app, origins=Config.CLIENT_ORIGIN)
 
 # ── shared clients ─────────────────────────────────────────────
