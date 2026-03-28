@@ -231,6 +231,43 @@ def predict_status():
 # ══════════════════════════════════════════════════════════════
 # RUN
 # ══════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
+# FRIEND INBOX PAGE
+# ══════════════════════════════════════════════════════════════
+@app.route('/friend')
+def friend_inbox():
+    return render_template('friend.html')
+
+
+# ── API: check if close friend notification should trigger ──
+@app.route('/api/friend/status', methods=['GET'])
+def friend_status():
+    if len(entries) < 5:
+        return jsonify({'triggered': False, 'reason': 'not_enough_entries', 'days': len(entries)})
+
+    # check last 5 entries — all must be score <= 2
+    last_5 = entries[-5:]
+    low_scores = [e for e in last_5 if e['mood_score'] <= 2]
+
+    if len(low_scores) == 5:
+        return jsonify({
+            'triggered': True,
+            'friend_name': 'X',
+            'friend_avatar': '🦊',
+            'days': [
+                {'date': e['date'], 'score': e['mood_score']}
+                for e in last_5
+            ]
+        })
+    else:
+        return jsonify({
+            'triggered': False,
+            'reason': 'scores_not_consistently_low',
+            'low_count': len(low_scores),
+            'days': len(entries)
+        })
+
+
 if __name__ == '__main__':
     print(f"Server starting on http://localhost:{Config.PORT}")
     app.run(port=Config.PORT, debug=False)

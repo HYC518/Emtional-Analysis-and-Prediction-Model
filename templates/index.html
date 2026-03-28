@@ -54,6 +54,20 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);heig
   transition:all .2s;
 }
 .write-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--shadow);}
+.inbox-btn{
+  display:flex;align-items:center;gap:6px;position:relative;
+  background:white;border:1.5px solid var(--sand);border-radius:20px;
+  padding:8px 16px;font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:800;color:var(--dark);
+  text-decoration:none;transition:all .2s;
+}
+.inbox-btn:hover{background:var(--lavender);border-color:var(--purple);color:var(--purple-d);}
+.inbox-icon{font-size:16px;}
+.inbox-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:#FF8FAB;position:absolute;top:-2px;right:-2px;
+  box-shadow:0 0 0 2px white;
+}
 
 /* ── LEFT SIDEBAR ── */
 .sidebar-left{
@@ -217,7 +231,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);heig
 .rcard.purple{background:var(--lavender);border:1.5px solid var(--purple);}
 .rc-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px;}
 .rc-val{font-size:14px;font-weight:600;color:var(--dark);line-height:1.6;}
-.flag-card{background:var(--red-l);border:1.5px solid var(--pink);border-radius:18px;padding:14px;margin-bottom:10px;font-size:13px;font-weight:700;color:#D45878;}
+.flag-card{background:#FFF8EC;border:1.5px solid #FFD0A0;border-radius:18px;padding:14px;margin-bottom:10px;font-size:13px;font-weight:700;color:#B07030;}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;margin-bottom:6px;}
 .badge.positive{background:#EDFAF5;color:#4A9E72;}
 .badge.negative{background:var(--red-l);color:#D45878;}
@@ -329,6 +343,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);heig
   </div>
   <div class="topbar-right">
     <div class="streak-pill">🔥 <span id="top-streak">0</span> day streak</div>
+    <a href="/friend" class="inbox-btn" id="inbox-btn">
+      <span class="inbox-icon">📬</span>
+      Inbox
+      <span class="inbox-dot" id="inbox-dot" style="display:none"></span>
+    </a>
     <button class="write-btn" onclick="openJournal()">✏️ Write today</button>
   </div>
 </div>
@@ -452,7 +471,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);heig
 // Noto emoji base URL
 const NOTO = 'https://fonts.gstatic.com/s/e/notoemoji/latest/';
 const notoFace  = {5:'/static/faces/face_5.svg',4:'/static/faces/face_4.svg',3:'/static/faces/face_3.svg',2:'/static/faces/face_2.svg',1:'/static/faces/face_1.svg'};
-const notoPred  = {5:'2728', 4:'1f338',3:'1f4ab',2:'1f327',1:'1fac2'};
+const notoPred  = {5:'✨', 4:'🌸', 3:'🌫️', 2:'🌧️', 1:'🫂'};
 
 function notoImg(code,cls=''){
   return `<img src="${code}" class="face-img ${cls}">`;
@@ -487,7 +506,19 @@ window.onload=async()=>{
   renderCalendar();
   updateStats();
   renderLeaderboard();
+  checkInboxDot();
 };
+
+async function checkInboxDot(){
+  try{
+    const res=await fetch('/api/friend/status');
+    const data=await res.json();
+    if(data.triggered){
+      document.getElementById('inbox-dot').style.display='block';
+      document.getElementById('inbox-btn').style.borderColor='#FFB5C8';
+    }
+  }catch(e){}
+}
 
 async function loadEntries(){
   try{const res=await fetch('/api/entries');const arr=await res.json();entries={};arr.forEach(e=>{entries[e.date]=e;});}catch(e){}
@@ -531,7 +562,7 @@ function renderCalendar(){
     } else if(pred){
       const r=Math.round(pred);
       cell.className='day-cell predicted';
-      cell.innerHTML=`<span class="pred-ai">AI</span>${notoImg(notoPred[r]||'1f4ab','pred-img')}<div class="dn" style="color:rgba(100,70,180,0.75)">${d}</div>`;
+      cell.innerHTML=`<span class="pred-ai">AI</span><div style="font-size:clamp(20px,3vw,32px);line-height:1">${notoPred[r]||'🌫️'}</div><div class="dn" style="color:rgba(100,70,180,0.75)">${d}</div>`;
       cell.onclick=()=>openPredictDay(ds,pred);
     } else {
       cell.className='day-cell no-entry';
@@ -660,7 +691,7 @@ async function submitEntry(){
     document.getElementById('cat-greeting').textContent = catResponses[body.mood_score] || catResponses[3];
 
     // warning FIRST if needed
-    if(s.flags&&s.flags.length>0) html+=`<div class="flag-card">⚠️ Some concerning phrases were noticed. Please reach out to someone you trust.</div>`;
+    if(s.flags&&s.flags.length>0) html+=`<div class="flag-card">💛 We noticed some heavy feelings in your entry. You don't have to carry this alone — reaching out to someone you trust can help.</div>`;
     if(data.escalation){const esc=data.escalation;html+=`<div class="rcard red"><div class="rc-label">Wellness check</div><div class="rc-val">${esc.suggested_action}${esc.resource_link?`<br><a href="${esc.resource_link}" target="_blank" style="color:#D45878;font-size:12px;margin-top:4px;display:inline-block">Get support →</a>`:''}</div></div>`;}
 
     // cat's reflection as a speech bubble instead of a plain card
@@ -701,7 +732,7 @@ function openPredictDay(date,score){
   document.getElementById('sheet-title').textContent=`${date} — AI Forecast`;
   document.getElementById('sheet-body').innerHTML=`
     <div style="text-align:center;padding:20px 0">
-      <img src="${NOTO}${notoPred[r]||'1f4ab'}/emoji.svg" style="width:72px;height:72px;margin-bottom:10px">
+      <div style="font-size:56px;margin-bottom:10px;line-height:1">${notoPred[r]||'🌫️'}</div>
       <div style="font-size:28px;font-weight:900;color:var(--purple-d)">${score.toFixed(1)}</div>
       <div style="font-size:12px;font-weight:700;color:var(--muted);margin-top:4px">AI predicted mood score</div>
     </div>

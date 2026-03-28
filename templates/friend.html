@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Journal — Inbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F0FF;--card:#fff;--dark:#3D3450;--muted:#B0A8C0;
+  --purple:#C9A8FF;--purple-d:#8B5CF6;--lavender:#EDE4FF;
+  --sand:#EDE4FF;--shadow:rgba(139,92,246,0.18);
+  --mint:#B5EAD7;--green:#4A9E72;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+.topbar{background:white;border-bottom:1px solid var(--sand);display:flex;align-items:center;padding:0 32px;gap:14px;height:60px;box-shadow:0 2px 16px rgba(139,92,246,0.07);}
+.topbar-logo{font-size:24px;}
+.topbar-title{font-size:17px;font-weight:900;color:var(--dark);}
+.topbar-sub{font-size:11px;color:var(--muted);font-weight:600;margin-left:4px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.account-pill{display:flex;align-items:center;gap:8px;background:var(--lavender);border-radius:24px;padding:7px 14px;font-size:13px;font-weight:800;color:var(--purple-d);}
+.back-btn{background:white;border:1.5px solid var(--sand);border-radius:20px;padding:7px 16px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;text-decoration:none;transition:all .2s;}
+.back-btn:hover{background:var(--lavender);color:var(--purple-d);border-color:var(--purple);}
+.container{max-width:680px;margin:0 auto;padding:40px 24px;}
+.page-title{font-size:22px;font-weight:900;color:var(--dark);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.page-sub{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:32px;}
+.unread-dot{width:10px;height:10px;border-radius:50%;background:#FF8FAB;display:inline-block;box-shadow:0 0 0 3px rgba(255,143,171,0.2);}
+.notif-card{background:white;border-radius:20px;border:2px solid #FFB5C8;box-shadow:0 4px 24px rgba(244,160,176,0.2);overflow:hidden;animation:slideIn .4s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.notif-header{background:linear-gradient(135deg,#FFF0F3,#FFE4EA);padding:20px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #FFD0DC;}
+.notif-icon{font-size:36px;}
+.nh-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:#D45878;margin-bottom:4px;}
+.nh-title{font-size:17px;font-weight:900;color:var(--dark);}
+.notif-time{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;}
+.notif-body{padding:24px;}
+.friend-row{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--sand);}
+.friend-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#FFB5C8,#FF8FAB);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:3px solid white;box-shadow:0 2px 12px rgba(244,160,176,0.3);}
+.friend-name{font-size:16px;font-weight:900;color:var(--dark);}
+.friend-sub{font-size:13px;font-weight:600;color:var(--muted);margin-top:2px;}
+.close-friend-tag{margin-left:auto;display:flex;align-items:center;gap:5px;background:var(--lavender);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:800;color:var(--purple-d);}
+.timeline-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:12px;}
+.mood-timeline{display:flex;gap:8px;margin-bottom:20px;}
+.mood-day{flex:1;text-align:center;}
+.mood-circle{width:44px;height:44px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.mood-circle.score-1{background:linear-gradient(145deg,#FFB5C8,#FF7EA0);}
+.mood-circle.score-2{background:linear-gradient(145deg,#FFCBA4,#FFB07A);}
+.mood-date{font-size:10px;font-weight:700;color:var(--muted);}
+.mood-score-label{font-size:11px;font-weight:900;color:#D45878;}
+.alert-box{background:#FFF8F0;border:1.5px solid #FFD0A0;border-radius:14px;padding:16px 18px;margin-bottom:20px;}
+.ab-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:#C07020;margin-bottom:6px;}
+.ab-text{font-size:14px;font-weight:600;color:var(--dark);line-height:1.6;font-family:'Lora',serif;font-style:italic;}
+.action-row{display:flex;gap:12px;}
+.action-btn{flex:1;padding:13px;border:none;border-radius:14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.action-btn.primary{background:linear-gradient(135deg,#C9A8FF,#8B5CF6);color:white;box-shadow:0 3px 14px var(--shadow);}
+.action-btn.primary:hover{transform:translateY(-1px);}
+.action-btn.secondary{background:white;color:var(--dark);border:1.5px solid var(--sand);}
+.action-btn.secondary:hover{background:var(--lavender);border-color:var(--purple);}
+.sent-badge{display:none;align-items:center;gap:8px;margin-top:16px;background:#EDFAF5;border:1.5px solid var(--mint);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--green);}
+.waiting-card{background:white;border-radius:20px;border:1.5px solid var(--sand);padding:32px;text-align:center;}
+.w-emoji{font-size:40px;margin-bottom:12px;}
+.w-title{font-size:16px;font-weight:900;color:var(--dark);margin-bottom:8px;}
+.w-text{font-size:14px;font-weight:600;color:var(--muted);line-height:1.6;}
+.progress-bar-wrap{background:var(--lavender);border-radius:20px;height:8px;margin:20px 0 8px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:20px;background:linear-gradient(135deg,#C9A8FF,#8B5CF6);transition:width .5s ease;}
+.progress-label{font-size:12px;font-weight:700;color:var(--purple-d);}
+.empty-notifs{text-align:center;padding:28px 20px;color:var(--muted);margin-top:16px;}
+.empty-notifs p{font-size:13px;font-weight:600;line-height:1.6;}
+.loading{text-align:center;padding:60px;color:var(--muted);}
+.spinner{width:28px;height:28px;border:3px solid var(--sand);border-top-color:var(--purple-d);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">🌿</div>
+  <div>
+    <span class="topbar-title">Mood Journal</span>
+    <span class="topbar-sub">— your gentle daily check-in</span>
+  </div>
+  <div class="topbar-right">
+    <div class="account-pill">👋 Hey, Jamie</div>
+    <a href="/" class="back-btn">← My journal</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="page-title" id="page-title">Inbox</div>
+  <div class="page-sub">Notifications from your close friends</div>
+  <div id="inbox-content">
+    <div class="loading"><div class="spinner"></div>Checking on your friends...</div>
+  </div>
+</div>
+
+<script>
+const FACES = {1:'/static/faces/face_1.svg', 2:'/static/faces/face_2.svg'};
+
+async function loadInbox() {
+  try {
+    const res  = await fetch('/api/friend/status');
+    const data = await res.json();
+    const box  = document.getElementById('inbox-content');
+    const now  = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const firstName = data.friend_name ? data.friend_name.split(' ')[0] : 'your friend';
+
+    if (data.triggered) {
+      document.getElementById('page-title').innerHTML = 'Inbox <span class="unread-dot"></span>';
+      box.innerHTML = `
+        <div class="notif-card">
+          <div class="notif-header">
+            <div class="notif-icon">💛</div>
+            <div>
+              <div class="nh-label">Wellness alert from Mood Journal</div>
+              <div class="nh-title">Your friend ${data.friend_name} may need support</div>
+            </div>
+            <div class="notif-time">Today, ${now}</div>
+          </div>
+          <div class="notif-body">
+            <div class="friend-row">
+              <div class="friend-avatar">${data.friend_avatar}</div>
+              <div>
+                <div class="friend-name">${data.friend_name}</div>
+                <div class="friend-sub">On your close friends list</div>
+              </div>
+              <div class="close-friend-tag">⭐ Close friend</div>
+            </div>
+            <div class="timeline-label">${firstName}'s last 5 days</div>
+            <div class="mood-timeline">
+              ${data.days.map(d=>`
+                <div class="mood-day">
+                  <div class="mood-circle score-${d.score}">
+                    <img src="${FACES[d.score]||FACES[1]}" style="width:36px;height:36px">
+                  </div>
+                  <div class="mood-date">${d.date.slice(5)}</div>
+                  <div class="mood-score-label">${d.score}/5</div>
+                </div>`).join('')}
+            </div>
+            <div class="alert-box">
+              <div class="ab-label">Message from Mood Journal</div>
+              <div class="ab-text">
+                ${firstName} has been having a rough stretch lately —
+                their mood has been low for 5 days in a row.
+                You're on their close friends list, which means they trust you.
+                A small message might mean more than you know. 🤍
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="action-btn primary" onclick="sendMessage('${firstName}')">💬 Send ${firstName} a message</button>
+              <button class="action-btn secondary" onclick="dismiss()">Maybe later</button>
+            </div>
+            <div class="sent-badge" id="sent-badge">
+              ✓ &nbsp;Message sent to ${firstName}! They'll know you're thinking of them.
+            </div>
+          </div>
+        </div>
+        <div class="empty-notifs"><p>No other notifications.<br>We'll let you know if any close friends need support.</p></div>
+      `;
+
+    } else if (data.reason === 'not_enough_entries') {
+      box.innerHTML = `
+        <div class="waiting-card">
+          <div class="w-emoji">📖</div>
+          <div class="w-title">No alerts yet</div>
+          <div class="w-text">We'll notify you if a close friend logs low mood scores for 5 consecutive days.</div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:${Math.min((data.days/5)*100,100)}%"></div></div>
+          <div class="progress-label">${data.days} / 5 entries logged so far</div>
+        </div>
+        <div class="empty-notifs"><p>No other notifications.<br>We'll let you know if any close friends need support.</p></div>
+      `;
+
+    } else {
+      box.innerHTML = `
+        <div class="waiting-card">
+          <div class="w-emoji">🌿</div>
+          <div class="w-title">Your friends seem okay</div>
+          <div class="w-text">No alerts right now — moods haven't dropped to a concerning level for 5 days in a row.</div>
+        </div>
+        <div class="empty-notifs"><p>No other notifications.<br>We'll let you know if any close friends need support.</p></div>
+      `;
+    }
+  } catch(e) {
+    document.getElementById('inbox-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-weight:600">Could not load. Is the server running?</div>';
+  }
+}
+
+function sendMessage(name) {
+  document.getElementById('sent-badge').style.display = 'flex';
+  document.querySelector('.action-row').style.opacity = '0.4';
+  document.querySelector('.action-row').style.pointerEvents = 'none';
+}
+
+function dismiss() {
+  const card = document.querySelector('.notif-card');
+  card.style.transition = 'all .3s';
+  card.style.opacity = '0.4';
+  card.style.transform = 'scale(0.98)';
+}
+
+loadInbox();
+</script>
+</body>
+</html>
