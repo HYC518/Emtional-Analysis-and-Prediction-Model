@@ -1,0 +1,31 @@
+{
+  "users": {
+    "alice": {
+      "password": "4e40e8ffe0ee32fa53e139147ed559229a5930f89c2204706fc174beb36210b3",
+      "nickname": "Alice",
+      "created_at": "2026-03-28T21:51:05.109615",
+      "friends": [
+        "bob"
+      ],
+      "friend_requests_in": [],
+      "friend_requests_out": []
+    },
+    "bob": {
+      "password": "8d059c3640b97180dd2ee453e20d34ab0cb0f2eccbe87d01915a8e578a202b11",
+      "nickname": "Bob",
+      "created_at": "2026-03-28T21:51:05.109615",
+      "friends": [
+        "alice"
+      ],
+      "friend_requests_in": [],
+      "friend_requests_out": []
+    }
+  },
+  "tokens": {
+    "187ac6c825553dbbde56794bfce47d76": "alice",
+    "9a42674f48561bbe094c4fb9de45a361": "bob",
+    "0c20613c5325edf302b5f10a870a24d6": "alice",
+    "d52c27c6700a8691ee6a04eda113d893": "alice",
+    "4e592b053ae6f6cfcfe8709dc8c94212": "bob"
+  }
+}

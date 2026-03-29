@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friends — Mood Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F0FF;--dark:#3D3450;--muted:#B0A8C0;--pink:#FFB5C8;--peach:#FFCBA4;--mint:#B5EAD7;--purple:#C9A8FF;--purple-d:#8B5CF6;--lavender:#EDE4FF;--red-l:#FFF0F3;--sand:#EDE4FF;--shadow:rgba(139,92,246,0.18);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:100;background:white;border-bottom:1px solid var(--sand);display:flex;align-items:center;padding:0 24px;height:60px;gap:14px;box-shadow:0 2px 16px rgba(139,92,246,0.07);}
+.topbar-logo{font-size:24px;}.topbar-title{font-size:17px;font-weight:900;}.topbar-sub{font-size:11px;color:var(--muted);font-weight:600;margin-left:4px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.back-btn{display:flex;align-items:center;gap:6px;background:white;border:1.5px solid var(--sand);border-radius:14px;padding:8px 16px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;color:var(--dark);text-decoration:none;transition:all .15s;}
+.back-btn:hover{background:var(--lavender);border-color:var(--purple);}
+.user-pill{display:flex;align-items:center;gap:8px;background:var(--lavender);border-radius:24px;padding:6px 14px 6px 10px;font-size:12px;font-weight:800;color:var(--purple-d);}
+.user-pill .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#8B5CF6);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.login-page{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;}
+.login-page.hidden{display:none;}
+.login-card{background:white;border-radius:28px;padding:40px 36px;width:90%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(139,92,246,0.15);border:1.5px solid var(--lavender);}
+.login-logo{font-size:48px;margin-bottom:8px;}.login-title{font-size:22px;font-weight:900;margin-bottom:4px;}.login-sub{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:24px;}
+.login-input{width:100%;padding:12px 16px;margin-bottom:12px;border:2px solid var(--sand);border-radius:14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--dark);outline:none;}.login-input:focus{border-color:var(--purple);}
+.login-btn{width:100%;padding:13px;margin-top:4px;background:linear-gradient(135deg,#C9A8FF,#8B5CF6);color:white;border:none;border-radius:16px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 18px var(--shadow);}
+.login-error{color:#D45878;font-size:12px;font-weight:700;margin-top:8px;min-height:18px;}
+.login-toggle{font-size:13px;font-weight:700;color:var(--muted);margin-top:16px;cursor:pointer;}.login-toggle span{color:var(--purple-d);font-weight:800;}
+.page{max-width:960px;margin:0 auto;padding:28px 24px 60px;}.page-title{font-size:28px;font-weight:900;margin-bottom:6px;}.page-sub{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:28px;}
+.section-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.count-badge{background:#D45878;color:white;font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;}.count-badge.purple{background:var(--purple-d);}
+.alert-card{background:white;border-radius:20px;padding:18px 20px;border:2px solid var(--peach);box-shadow:0 4px 20px rgba(255,180,140,0.1);margin-bottom:12px;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.alert-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}.alert-emoji{font-size:28px;}.alert-name{font-size:15px;font-weight:900;color:#D45878;}.alert-detail{font-size:12px;font-weight:600;color:var(--muted);margin-top:2px;}
+.alert-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.alert-btn{padding:8px 16px;border-radius:14px;border:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:all .15s;}
+.alert-btn.primary{background:linear-gradient(135deg,#C9A8FF,#8B5CF6);color:white;box-shadow:0 3px 12px rgba(139,92,246,0.25);}.alert-btn.primary:hover{transform:translateY(-1px);}
+.alert-btn.secondary{background:var(--bg);color:var(--muted);border:1.5px solid var(--sand);}.alert-btn.secondary:hover{background:var(--lavender);color:var(--purple-d);}
+.no-alerts{text-align:center;padding:24px;background:white;border-radius:20px;border:2px solid var(--mint);margin-bottom:12px;}.no-alerts-icon{font-size:36px;margin-bottom:8px;}.no-alerts-text{font-size:14px;font-weight:700;color:#4A9E72;}
+.add-bar{display:flex;gap:10px;margin-bottom:28px;background:white;border-radius:20px;padding:12px 16px;border:1.5px solid var(--sand);}
+.add-input{flex:1;padding:10px 14px;border:2px solid var(--sand);border-radius:14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--dark);outline:none;}.add-input:focus{border-color:var(--purple);}
+.add-btn{background:linear-gradient(135deg,#C9A8FF,#8B5CF6);color:white;border:none;border-radius:14px;padding:10px 20px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 14px var(--shadow);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:16px;font-size:13px;font-weight:800;box-shadow:0 6px 24px rgba(0,0,0,0.15);z-index:500;animation:toastIn .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.toast.ok{background:#4A9E72;color:white;}.toast.err{background:#D45878;color:white;}
+.req-card{display:flex;align-items:center;gap:14px;background:white;border-radius:18px;padding:14px 18px;margin-bottom:10px;border:1.5px solid var(--peach);animation:fadeUp .3s ease;}
+.req-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--peach),#FFB07A);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid white;box-shadow:0 3px 10px rgba(0,0,0,0.08);flex-shrink:0;}
+.req-name{font-size:14px;font-weight:800;}.req-sub{font-size:11px;font-weight:600;color:var(--muted);}.req-actions{display:flex;gap:6px;margin-left:auto;}
+.req-btn{width:36px;height:36px;border-radius:50%;border:none;font-size:16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.req-btn.accept{background:#EDFAF5;color:#4A9E72;}.req-btn.accept:hover{background:#4A9E72;color:white;transform:scale(1.1);}
+.req-btn.reject{background:var(--red-l);color:#D45878;}.req-btn.reject:hover{background:#D45878;color:white;transform:scale(1.1);}
+.friends-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.friend-card{background:white;border-radius:22px;padding:22px;border:1.5px solid var(--sand);box-shadow:0 4px 20px rgba(139,92,246,0.06);transition:all .2s;animation:fadeUp .3s ease;}
+.friend-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(139,92,246,0.12);}
+.friend-card.needs-support{border-color:var(--peach);box-shadow:0 4px 20px rgba(255,180,140,0.12);}
+.fc-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.fc-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid white;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,0.1);}
+.fc-avatar.happy{background:linear-gradient(145deg,#B5EAD7,#6DC8A0);}.fc-avatar.okay{background:linear-gradient(145deg,#FFE566,#FFCD00);}.fc-avatar.low{background:linear-gradient(145deg,#FFCBA4,#FFB07A);}.fc-avatar.sad{background:linear-gradient(145deg,#FFB5C8,#FF7EA0);}.fc-avatar.none{background:linear-gradient(145deg,var(--lavender),var(--purple));}
+.fc-name{font-size:16px;font-weight:900;}.fc-status{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;}.fc-support-tag{display:inline-block;background:#FFF8F0;color:#C07020;font-size:10px;font-weight:900;padding:3px 8px;border-radius:8px;margin-top:4px;}
+.fc-stats{display:flex;gap:8px;margin-bottom:14px;}.fc-stat{flex:1;text-align:center;padding:10px 6px;background:var(--bg);border-radius:14px;}.fc-stat-num{font-size:18px;font-weight:900;color:var(--purple-d);}.fc-stat-label{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;}
+.fc-mood-row{display:flex;gap:4px;align-items:flex-end;height:40px;margin-bottom:14px;}.fc-bar{flex:1;border-radius:6px 6px 0 0;min-width:0;position:relative;}.fc-bar-tip{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;color:var(--muted);display:none;}.fc-bar:hover .fc-bar-tip{display:block;}
+.trend-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800;}.trend-pill.improving{background:#EDFAF5;color:#4A9E72;}.trend-pill.declining{background:var(--red-l);color:#D45878;}.trend-pill.stable{background:var(--lavender);color:var(--purple-d);}
+.fc-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:12px;}.fc-remove{background:none;border:none;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:8px;}.fc-remove:hover{background:var(--red-l);color:#D45878;}
+.empty-state{text-align:center;padding:60px 20px;}.empty-icon{font-size:64px;margin-bottom:16px;}.empty-title{font-size:20px;font-weight:900;margin-bottom:8px;}.empty-sub{font-size:14px;font-weight:600;color:var(--muted);line-height:1.6;}
+.loading{text-align:center;padding:40px;color:var(--muted);}.spinner{width:28px;height:28px;border:3px solid var(--sand);border-top-color:var(--purple-d);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.friends-grid{grid-template-columns:1fr;}.add-bar{flex-direction:column;}.page{padding:20px 16px 60px;}}
+</style>
+</head>
+<body>
+<div class="login-page" id="login-page">
+  <div class="login-card">
+    <div class="login-logo">🌿</div>
+    <div class="login-title" id="auth-title">Welcome back</div>
+    <div class="login-sub" id="auth-sub">Sign in to see your friends</div>
+    <input class="login-input" id="auth-user" placeholder="Username" autocomplete="username">
+    <input class="login-input" id="auth-pass" type="password" placeholder="Password" autocomplete="current-password">
+    <input class="login-input" id="auth-nick" placeholder="Nickname (optional)" style="display:none" autocomplete="off">
+    <button class="login-btn" id="auth-btn" onclick="doAuth()">Sign in 💜</button>
+    <div class="login-error" id="auth-error"></div>
+    <div class="login-toggle" id="auth-toggle" onclick="toggleAuthMode()">Don't have an account? <span>Sign up</span></div>
+  </div>
+</div>
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-logo">🌿</div>
+    <div><span class="topbar-title">Friends</span><span class="topbar-sub">— check in on your people</span></div>
+    <div class="topbar-right">
+      <a href="/" class="back-btn">📅 My Journal</a>
+      <div class="user-pill"><div class="avatar">🐱</div><span id="user-display-name">User</span></div>
+    </div>
+  </div>
+  <div class="page">
+    <div class="page-title">Your Friends 👫</div>
+    <div class="page-sub">See how your friends are doing. We'll gently let you know if someone could use a kind word.</div>
+    <div id="alerts-section" style="display:none">
+      <div class="section-label">💛 Friend Check-ins <span class="count-badge" style="background:#C07020" id="alert-count">0</span></div>
+      <div id="alerts-container"></div>
+    </div>
+    <div class="add-bar">
+      <input class="add-input" id="add-input" placeholder="Enter a username to add as friend...">
+      <button class="add-btn" onclick="sendFriendReq()">Add Friend 💜</button>
+    </div>
+    <div id="requests-section" style="display:none"><div class="section-label">📨 Friend Requests</div><div id="requests-container"></div></div>
+    <div id="outgoing-section" style="display:none"><div class="section-label">📤 Sent Requests</div><div id="outgoing-container"></div></div>
+    <div class="section-label" id="friends-label" style="display:none">👥 Friends <span class="count-badge purple" id="friends-count">0</span></div>
+    <div id="friends-content"><div class="loading"><div class="spinner"></div>Loading friends...</div></div>
+  </div>
+</div>
+<div id="toast-container"></div>
+<script>
+let authToken=localStorage.getItem('auth_token')||'',authUser=localStorage.getItem('auth_user')||'',authMode='login',alertPollTimer=null;
+function authHeaders(){return{'Content-Type':'application/json','Authorization':'Bearer '+authToken};}
+function authFetch(url,opts={}){opts.headers={...(opts.headers||{}),'Authorization':'Bearer '+authToken};return fetch(url,opts);}
+function toggleAuthMode(){
+  authMode=authMode==='login'?'register':'login';
+  document.getElementById('auth-title').textContent=authMode==='login'?'Welcome back':'Create account';
+  document.getElementById('auth-sub').textContent=authMode==='login'?'Sign in to see your friends':'Join your mood journal community';
+  document.getElementById('auth-btn').textContent=authMode==='login'?'Sign in 💜':'Create account 💜';
+  document.getElementById('auth-nick').style.display=authMode==='register'?'block':'none';
+  document.getElementById('auth-toggle').innerHTML=authMode==='login'?"Don't have an account? <span>Sign up</span>":"Already have an account? <span>Sign in</span>";
+  document.getElementById('auth-error').textContent='';
+}
+async function doAuth(){
+  const user=document.getElementById('auth-user').value.trim(),pass=document.getElementById('auth-pass').value,nick=document.getElementById('auth-nick').value.trim();
+  document.getElementById('auth-error').textContent='';
+  if(!user||!pass){document.getElementById('auth-error').textContent='Please fill in all fields';return;}
+  try{
+    const res=await fetch(authMode==='login'?'/api/auth/login':'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(authMode==='login'?{username:user,password:pass}:{username:user,password:pass,nickname:nick||user})});
+    const data=await res.json();
+    if(!data.success){document.getElementById('auth-error').textContent=data.error;return;}
+    authToken=data.token;authUser=data.username;localStorage.setItem('auth_token',authToken);localStorage.setItem('auth_user',authUser);
+    enterApp(data.nickname||data.username);
+  }catch(e){document.getElementById('auth-error').textContent='Server unreachable';}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('login-page').classList.contains('hidden'))doAuth();});
+function enterApp(name){document.getElementById('login-page').classList.add('hidden');document.getElementById('app').style.display='block';document.getElementById('user-display-name').textContent=name||authUser;loadAll();}
+window.onload=async()=>{if(authToken){try{const r=await authFetch('/api/auth/me');if(r.ok){const d=await r.json();enterApp(d.username);return;}}catch(e){}localStorage.removeItem('auth_token');localStorage.removeItem('auth_user');authToken='';authUser='';}};
+async function loadAll(){await Promise.all([loadFriendAlerts(),loadFriends(),loadMoodSummaries()]);startAlertPolling();}
+function showToast(msg,ok=true){const el=document.createElement('div');el.className=`toast ${ok?'ok':'err'}`;el.textContent=msg;document.getElementById('toast-container').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3000);}
+
+let friendAlerts=[];
+async function loadFriendAlerts(){try{const r=await authFetch('/api/friend-alerts');friendAlerts=await r.json()||[];renderAlerts();}catch(e){}}
+function renderAlerts(){
+  const s=document.getElementById('alerts-section'),c=document.getElementById('alerts-container');
+  document.getElementById('alert-count').textContent=friendAlerts.length;s.style.display='block';
+  if(!friendAlerts.length){c.innerHTML='<div class="no-alerts"><div class="no-alerts-icon">✅</div><div class="no-alerts-text">All your friends are doing okay right now!</div></div>';return;}
+  c.innerHTML=friendAlerts.map(a=>`<div class="alert-card" id="alert-${a.id}" style="border-color:var(--peach);box-shadow:0 4px 20px rgba(255,180,140,0.12)"><div class="alert-top"><div class="alert-emoji">💛</div><div style="flex:1"><div class="alert-name" style="color:#C07020">${a.from_user} could use a check-in</div><div class="alert-detail">Has been feeling down for a few days · avg ${a.avg_score}/5 · ${a.date_range}</div></div></div><div class="alert-actions"><button class="alert-btn primary" style="background:linear-gradient(135deg,#C9A8FF,#8B5CF6)" onclick="dismissAlert('${a.id}')">I'll reach out 💜</button><button class="alert-btn secondary" onclick="dismissAlert('${a.id}')">Dismiss</button></div></div>`).join('');
+}
+async function dismissAlert(id){const el=document.getElementById('alert-'+id);if(el){el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateY(-10px)';}try{await authFetch('/api/friend-alerts/dismiss',{method:'POST',headers:authHeaders(),body:JSON.stringify({alert_id:id})});}catch(e){}setTimeout(()=>{friendAlerts=friendAlerts.filter(a=>a.id!==id);renderAlerts();},300);}
+function startAlertPolling(){if(alertPollTimer)clearInterval(alertPollTimer);alertPollTimer=setInterval(loadFriendAlerts,30000);}
+
+let friendsList=[],requestsIn=[],requestsOut=[];
+async function loadFriends(){try{const r=await authFetch('/api/friends');const d=await r.json();friendsList=d.friends||[];requestsIn=d.requests_in||[];requestsOut=d.requests_out||[];renderRequests();renderOutgoing();}catch(e){}}
+function renderRequests(){const s=document.getElementById('requests-section');if(!requestsIn.length){s.style.display='none';return;}s.style.display='block';const em=['🌸','🌼','🍀','🌈','⭐','🦋'];document.getElementById('requests-container').innerHTML=requestsIn.map((u,i)=>`<div class="req-card"><div class="req-avatar">${em[i%em.length]}</div><div><div class="req-name">${u}</div><div class="req-sub">Wants to be your friend</div></div><div class="req-actions"><button class="req-btn accept" onclick="acceptReq('${u}')">✓</button><button class="req-btn reject" onclick="rejectReq('${u}')">✕</button></div></div>`).join('');}
+function renderOutgoing(){const s=document.getElementById('outgoing-section');if(!requestsOut.length){s.style.display='none';return;}s.style.display='block';document.getElementById('outgoing-container').innerHTML=requestsOut.map(u=>`<div class="req-card" style="border-color:var(--sand)"><div class="req-avatar" style="background:linear-gradient(135deg,var(--lavender),var(--purple))">📤</div><div><div class="req-name">${u}</div><div class="req-sub">Waiting for response...</div></div></div>`).join('');}
+
+let moodSummaries=[];
+async function loadMoodSummaries(){try{const r=await authFetch('/api/friends/mood-summary');moodSummaries=await r.json()||[];renderFriendsGrid();}catch(e){document.getElementById('friends-content').innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-weight:600">Could not load</div>';}}
+function renderFriendsGrid(){
+  const content=document.getElementById('friends-content'),label=document.getElementById('friends-label');
+  document.getElementById('friends-count').textContent=friendsList.length;
+  if(!friendsList.length){label.style.display='none';content.innerHTML='<div class="empty-state"><div class="empty-icon">👋</div><div class="empty-title">No friends yet</div><div class="empty-sub">Add someone above. Try <strong>alice</strong> or <strong>bob</strong>!</div></div>';return;}
+  label.style.display='flex';
+  const av=['🐻','🦊','🐼','🐰','🐨','🦋','🐝','🌸'],bc=s=>s>=4?'#6DC8A0':s===3?'#FFCD00':s===2?'#FFB07A':'#FF7EA0',ac=a=>a===null?'none':a>=3.5?'happy':a>=2.5?'okay':a>=1.5?'low':'sad',tt=t=>t==='improving'?'↗ Getting better':t==='declining'?'↘ Declining':'→ Stable';
+  content.innerHTML='<div class="friends-grid">'+friendsList.map((f,i)=>{
+    const s=moodSummaries.find(x=>x.username===f);
+    if(!s||!s.total_entries)return`<div class="friend-card"><div class="fc-top"><div class="fc-avatar none">${av[i%av.length]}</div><div><div class="fc-name">${f}</div><div class="fc-status">No entries yet</div></div></div><div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;font-weight:600">Hasn't started journaling yet</div><div class="fc-bottom"><div></div><button class="fc-remove" onclick="removeFriend('${f}')">Remove</button></div></div>`;
+    const bars=s.recent_scores.map(r=>`<div class="fc-bar" style="height:${(r.score/5)*100}%;background:${bc(r.score)}"><div class="fc-bar-tip">${r.score}</div></div>`).join('');
+    return`<div class="friend-card ${s.needs_support?'needs-support':''}"><div class="fc-top"><div class="fc-avatar ${ac(s.avg_mood)}">${av[i%av.length]}</div><div><div class="fc-name">${f}</div><div class="fc-status">Last entry: ${s.last_entry_date}</div>${s.needs_support?'<div class="fc-support-tag" style="background:#FFF8F0;color:#C07020;border:1px solid #FFD0A0">🌧️ Having a rough stretch</div>':''}</div></div><div class="fc-stats"><div class="fc-stat"><div class="fc-stat-num">${s.avg_mood}</div><div class="fc-stat-label">Avg Mood</div></div><div class="fc-stat"><div class="fc-stat-num">${s.streak}</div><div class="fc-stat-label">Streak 🔥</div></div><div class="fc-stat"><div class="fc-stat-num">${s.total_entries}</div><div class="fc-stat-label">Entries</div></div></div><div style="font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Last 7 days</div><div class="fc-mood-row">${bars}</div><div class="fc-bottom"><span class="trend-pill ${s.mood_trend}">${tt(s.mood_trend)}</span><button class="fc-remove" onclick="removeFriend('${f}')">Remove</button></div></div>`;
+  }).join('')+'</div>';
+}
+async function sendFriendReq(){const input=document.getElementById('add-input'),to=input.value.trim();if(!to){showToast('Please enter a username',false);return;}try{const r=await authFetch('/api/friends/request',{method:'POST',headers:authHeaders(),body:JSON.stringify({to_user:to})});const d=await r.json();showToast(d.message||d.error,d.success);if(d.success){input.value='';await loadFriends();await loadMoodSummaries();}}catch(e){showToast('Server error',false);}}
+async function acceptReq(u){try{const r=await authFetch('/api/friends/accept',{method:'POST',headers:authHeaders(),body:JSON.stringify({from_user:u})});const d=await r.json();showToast(d.message||d.error,d.success);await loadFriends();await loadMoodSummaries();}catch(e){showToast('Server error',false);}}
+async function rejectReq(u){try{const r=await authFetch('/api/friends/reject',{method:'POST',headers:authHeaders(),body:JSON.stringify({from_user:u})});const d=await r.json();showToast(d.message||d.error,d.success);await loadFriends();}catch(e){showToast('Server error',false);}}
+async function removeFriend(u){if(!confirm('Remove '+u+' from friends?'))return;try{const r=await authFetch('/api/friends/remove',{method:'POST',headers:authHeaders(),body:JSON.stringify({friend:u})});const d=await r.json();showToast(d.message||d.error,d.success);await loadFriends();await loadMoodSummaries();}catch(e){showToast('Server error',false);}}
+</script>
+</body>
+</html>
