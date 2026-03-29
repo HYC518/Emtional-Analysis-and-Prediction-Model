@@ -6,7 +6,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import json
 import threading
 import pandas as pd
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_cors import CORS
 from google import genai
 
@@ -516,7 +516,63 @@ def predict_status_route():
 # ══════════════════════════════════════════════════════════════
 # RUN
 # ══════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
+# FRIEND ALERTS (for friend.html)
+# ══════════════════════════════════════════════════════════════
+@app.route('/api/friend-alerts', methods=['GET'])
+@login_required
+def friend_alerts():
+    username = request.username
+    friends_data = FriendManager.get_friends(username)
+    friends = friends_data.get('friends', [])
+
+    alerts = []
+    for friend in friends:
+        friend_entries = user_entries.get(friend, [])
+        if len(friend_entries) < 5:
+            continue
+        last_5 = friend_entries[-5:]
+        low = [e for e in last_5 if e['mood_score'] <= 2]
+        if len(low) == 5:
+            db = __import__('json')
+            import json
+            # get friend nickname from users.json
+            try:
+                with open('users.json', 'r') as f:
+                    db = json.load(f)
+                friend_nickname = db['users'].get(friend, {}).get('nickname', friend)
+            except:
+                friend_nickname = friend
+            alerts.append({
+                'id': friend,
+                'friend_username': friend,
+                'friend_name': friend_nickname,
+                'friend_avatar': '🌸',
+                'days': [{'date': e['date'], 'score': e['mood_score']} for e in last_5]
+            })
+
+    return jsonify(alerts)
+
+
+@app.route('/api/friend-alerts/dismiss', methods=['POST'])
+@login_required
+def dismiss_alert():
+    return jsonify({'success': True})
+
+
+# ══════════════════════════════════════════════════════════════
+# PAGES
+# ══════════════════════════════════════════════════════════════
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/friend')
+def friend_page():
+    return render_template('friend.html')
+
+
 if __name__ == '__main__':
-    print(f"Server starting on http://localhost:{Config.PORT}")
     port = int(os.environ.get("PORT", Config.PORT))
+    print(f"Server starting on http://localhost:{port}")
     app.run(host="0.0.0.0", port=port, debug=False)
