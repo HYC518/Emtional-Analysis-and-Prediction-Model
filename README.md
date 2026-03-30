@@ -1,90 +1,158 @@
-# Mood Journal — Emotional Analysis & Prediction Model
+# Mood Journal 🌿
+### AI-Powered Mental Health Journaling for College Students
+**HackWashU Spring 2026** · Built with Python, Flask, and Google Gemini
 
-A mental health journaling app for college students that combines AI, sentiment analysis, and deep learning to track and predict mood patterns.
+---
+
+## What It Does
+
+Mood Journal is a daily check-in app that helps college students track their emotional wellbeing over time. Users write a short journal entry each day, rate their mood from 1 to 5, and receive personalized AI-generated feedback. Over time, the app identifies mood patterns, predicts the next 7 days, and automatically alerts close friends if a user's mood stays critically low.
+
+---
 
 ## Features
 
-- **Daily Journal** — write entries and rate your mood (1-5)
-- **Sentiment Analysis** — automatically detects positive, negative and concerning language
-- **Reflection Prompts** — Gemini AI generates warm, personalised journaling questions
-- **Escalation Check** — flags concerning phrases and sustained low mood
-- **Pattern Analysis** — Gemini finds mood trends across the last 14 days
-- **7-Day Prediction** — LSTM neural network predicts future mood scores
-- **Web Interface** — clean Flask web app with chart visualisation
+| Feature | Description |
+|---|---|
+| 📓 Daily Journal | Write freely and rate your mood 1–5 |
+| 🤖 AI Reflection | Gemini reads your entry and responds like a caring friend |
+| 💬 Sentiment Analysis | Local NLP detects emotional tone with negation handling |
+| ⚠️ Crisis Detection | Flags concerning phrases and links to WashU Counseling |
+| 📈 Pattern Analysis | Gemini identifies mood trends after 7+ entries |
+| 🔮 7-Day Forecast | Trend-aware mood predictor for the next week |
+| 👥 Friend Alerts | Notifies close friends after 5 consecutive low-mood days |
+| 💬 Real-Time Chat | Message friends directly from the app |
+| 🔐 Multi-User Auth | Token-based login with friend request system |
+
+---
 
 ## Tech Stack
 
-- **AI** — Google Gemini API
-- **ML** — PyTorch LSTM neural network
-- **Backend** — Python, Flask
-- **Data** — Pandas, Matplotlib
-- **Frontend** — HTML, CSS, JavaScript, Chart.js
+**Backend:** Python 3.12, Flask, Google Gemini API  
+**ML/NLP:** PyTorch LSTM, Custom Sentiment Analyzer  
+**Frontend:** HTML, CSS, JavaScript, Chart.js  
+**Data:** Pandas, Matplotlib  
+**Auth:** SHA256 password hashing, Bearer token sessions  
+**Storage:** In-memory (per-user), JSON for accounts  
+
+---
 
 ## Setup
 
 ### 1. Clone the repo
-```
-git clone https://github.com/HYC518/Emtional-Analysis-and-Prediction-Model.git
-cd Emtional-Analysis-and-Prediction-Model
+```bash
+git clone https://github.com/HYC518/MoodJournal.git
+cd MoodJournal
 ```
 
 ### 2. Create virtual environment
-```
+```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
 ### 3. Install dependencies
-```
+```bash
 pip install -r requirements.txt
 ```
 
-### 4. Create .env file
+### 4. Create `.env` file
 ```
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
+PORT=3002
 ```
 
-### 5. Run the web app
-```
+### 5. Run the server
+```bash
 python server.py
 ```
 
-Then open http://localhost:3001 in your browser.
+Open [http://localhost:3002](http://localhost:3002) in your browser.
 
-### 6. Or run the terminal pipeline
-```
-python main.py
-```
+---
+
+## Default Accounts
+
+| Username | Password |
+|---|---|
+| alice | alice123 |
+| bob | bob123 |
+
+Or register a new account from the login page.
+
+---
 
 ## Project Structure
+
 ```
-mood-journal/
-├── config.py              # environment settings
-├── gemini_client.py       # Gemini AI wrapper
-├── data_loader.py         # data loading and cleaning
-├── prompts.py             # all Gemini prompt templates
-├── data_preprocessor.py   # two-stage data cleaning pipeline
-├── sentiment_analyzer.py  # local sentiment analysis
-├── predictor.py           # LSTM mood prediction model
-├── server.py              # Flask web server
-├── main.py                # terminal pipeline
-├── requirements.txt       # dependencies
+MoodJournal/
+├── server.py              # Flask web server + all API routes
+├── auth.py                # Login, register, token auth, friend system
+├── config.py              # Environment config
+├── gemini_client.py       # Google Gemini API wrapper
+├── prompts.py             # All AI prompt templates
+├── sentiment_analyzer.py  # Local NLP with negation handling
+├── predictor.py           # Mood prediction model
+├── data_preprocessor.py   # Data cleaning pipeline
+├── data_loader.py         # CSV/Excel loader
+├── main.py                # Terminal pipeline (standalone)
+├── users.json             # User accounts + friend relationships
+├── requirements.txt
 └── templates/
-    └── index.html         # web frontend
+    ├── index.html         # Main calendar app
+    ├── friend.html        # Friend inbox + chat
+    └── login.html         # Login / register
 ```
 
-## How it Works
+---
 
-1. Student writes a daily journal entry and rates their mood (1-5)
-2. System runs local sentiment analysis on the journal text
-3. Gemini generates a warm personalised reflection prompt
-4. Escalation check runs on last 5 entries — flags concerning phrases
-5. After 7+ entries — Gemini analyses mood patterns and gives suggestions
-6. After 4+ entries — LSTM model predicts next 7 days of mood scores
+## How It Works
+
+```
+1. User writes a journal entry and selects mood score (1–5)
+2. Local sentiment analyzer detects emotional tone instantly
+3. Gemini reads the entry and generates a warm, personalized response
+4. Escalation check runs — flags crisis language or sustained low scores
+5. After 7+ entries → Gemini analyzes mood patterns across the week
+6. After 4+ entries → Predictor forecasts next 7 days
+7. After 5 consecutive low-mood days → Close friends receive an alert
+```
+
+---
+
+## AI Pipeline
+
+```
+Journal Entry
+     │
+     ├─► Sentiment Analysis (local, instant)
+     │        └─► negation handling, crisis phrase detection
+     │
+     ├─► Gemini Reflection (AI)
+     │        └─► reads actual entry, responds like a friend
+     │
+     ├─► Safety Escalation (AI)
+     │        └─► risk assessment → WashU Counseling link
+     │
+     ├─► Pattern Analysis (AI, 7+ entries)
+     │        └─► weekly trends, concrete suggestions
+     │
+     └─► Mood Prediction (4+ entries)
+              └─► 7-day forecast on calendar
+```
+
+---
 
 ## Notes
 
-- All data is stored in memory — restarting the server clears entries
-- Minimum 4 entries needed for mood prediction
-- Minimum 7 entries needed for pattern analysis
+- Journal data is stored in memory — restarting the server clears entries
+- Passwords are hashed with SHA256
+- Gemini API processes journal text — no data sold to third parties
+- Minimum 4 entries for mood prediction, 7 for pattern analysis
+
+---
+
+## Built At
+
+**HackWashU AI Hackathon · Spring 2026 · St. Louis, MO**
